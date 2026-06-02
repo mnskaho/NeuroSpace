@@ -1,0 +1,325 @@
+Configuration chargee:
+   - Uploads: C:\Users\DELL\Desktop\NeuroSpace - Copie - Copie\backend\uploads
+   - Results: C:\Users\DELL\Desktop\NeuroSpace - Copie - Copie\backend\results
+   - Colab URL: http://localhost:7000
+INFO:     127.0.0.1:55182 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49687 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56555 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65418 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64088 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:59794 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET / HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "OPTIONS /api/train/5b744921-dec2-46e1-88c4-806de5426538 HTTP/1.1" 200 OK
+📥 TRAINING REQUEST REÇUE:
+{
+  "model_types": [
+    "rnn",
+    "qrnn"
+  ],
+  "comparison_mode": "mi",
+  "qrnn_backend": "qiskit",
+  "feature_selector": "mi",
+  "noise_enabled": true,
+  "noise_level": 0.01,
+  "mitigation_enabled": true,
+  "mitigation_runs": 3,
+  "rnn_epochs": 30,
+  "rnn_batch_size": null,
+  "rnn_hidden_size": null,
+  "rnn_num_layers": null,
+  "rnn_dropout": null,
+  "rnn_learning_rate": null,
+  "qrnn_epochs": 20,
+  "qrnn_batch_size": 16,
+  "qrnn_layers": null,
+  "qrnn_learning_rate": null,
+  "batch_size": null
+}
+✅ Job 5b744921-dec2-46e1-88c4-806de5426538 envoyé en file d'attente
+🎛️ USER PREFERENCES:
+{
+  "model_types": [
+    "rnn",
+    "qrnn"
+  ],
+  "comparison_mode": "mi",
+  "qrnn_backend": "qiskit",
+  "feature_selector": "mi",
+  "noise_enabled": true,
+  "noise_level": 0.01,
+  "mitigation_enabled": true,
+  "mitigation_runs": 3
+}
+🎛️ MANUAL OVERRIDES:
+{
+  "rnn_epochs": 30,
+  "qrnn_epochs": 20,
+  "qrnn_batch_size": 16
+}
+INFO:     127.0.0.1:51508 - "POST /api/train/5b744921-dec2-46e1-88c4-806de5426538 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "OPTIONS /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+🚀 Job 5b744921-dec2-46e1-88c4-806de5426538 envoyé au worker
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/dataset/5b744921-dec2-46e1-88c4-806de5426538 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+✅ Job 5b744921-dec2-46e1-88c4-806de5426538 terminé avec succès
+INFO:     34.83.118.187:0 - "POST /api/job/5b744921-dec2-46e1-88c4-806de5426538/complete HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/job/5b744921-dec2-46e1-88c4-806de5426538/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "OPTIONS /api/results/5b744921-dec2-46e1-88c4-806de5426538 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51508 - "GET /api/results/5b744921-dec2-46e1-88c4-806de5426538 HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49674 - "GET /api/report/5b744921-dec2-46e1-88c4-806de5426538/pdf HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:56231 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:55123 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.83.118.187:0 - "GET /api/next-job HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:53935 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64451 - "GET /api/report/2fca297f-4fcc-4c49-bd06-4300089cc03d/pdf HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET / HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:55902 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "OPTIONS /api/train/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 HTTP/1.1" 200 OK
+📥 TRAINING REQUEST REÇUE:
+{
+  "model_types": [
+    "rnn"
+  ],
+  "comparison_mode": "mi",
+  "qrnn_backend": "pennylane",
+  "feature_selector": "mi",
+  "noise_enabled": false,
+  "noise_level": 0.0,
+  "mitigation_enabled": false,
+  "mitigation_runs": 1,
+  "rnn_epochs": 30,
+  "rnn_batch_size": 32,
+  "rnn_hidden_size": null,
+  "rnn_num_layers": null,
+  "rnn_dropout": null,
+  "rnn_learning_rate": null,
+  "qrnn_epochs": null,
+  "qrnn_batch_size": null,
+  "qrnn_layers": null,
+  "qrnn_learning_rate": null,
+  "batch_size": null
+}
+✅ Job a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 envoyé en file d'attente
+🎛️ USER PREFERENCES:
+{
+  "model_types": [
+    "rnn"
+  ],
+  "comparison_mode": "mi",
+  "qrnn_backend": "pennylane",
+  "feature_selector": "mi",
+  "noise_enabled": false,
+  "noise_level": 0.0,
+  "mitigation_enabled": false,
+  "mitigation_runs": 1
+}
+🎛️ MANUAL OVERRIDES:
+{
+  "rnn_epochs": 30,
+  "rnn_batch_size": 32
+}
+INFO:     127.0.0.1:55292 - "POST /api/train/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "OPTIONS /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+🚀 Job a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 envoyé au worker
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/dataset/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+✅ Job a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 terminé avec succès
+INFO:     34.6.223.170:0 - "POST /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/complete HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/job/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "OPTIONS /api/results/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55292 - "GET /api/results/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61085 - "GET /api/report/a8bf0e85-a4d7-4133-b90c-374bb5f41dc2/pdf HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     34.6.223.170:0 - "GET /api/next-job HTTP/1.1" 200 OK
+✅ Dataset uploadé: 699 samples, 9 features, 2 classes, target=class
+INFO:     127.0.0.1:53856 - "POST /api/upload HTTP/1.1" 200 OK
+INFO:     35.252.191.129:0 - "GET / HTTP/1.1" 200 OK
+INFO:     35.252.191.129:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "OPTIONS /api/train/f358f294-7d02-4506-8624-89b98cc99a70 HTTP/1.1" 200 OK
+📥 TRAINING REQUEST REÇUE:
+{
+  "model_types": [
+    "qrnn"
+  ],
+  "comparison_mode": "pca",
+  "qrnn_backend": "qiskit",
+  "feature_selector": "pca",
+  "noise_enabled": false,
+  "noise_level": 0.0,
+  "mitigation_enabled": false,
+  "mitigation_runs": 1,
+  "rnn_epochs": null,
+  "rnn_batch_size": null,
+  "rnn_hidden_size": null,
+  "rnn_num_layers": null,
+  "rnn_dropout": null,
+  "rnn_learning_rate": null,
+  "qrnn_epochs": 20,
+  "qrnn_batch_size": 16,
+  "qrnn_layers": null,
+  "qrnn_learning_rate": null,
+  "batch_size": null
+}
+✅ Job f358f294-7d02-4506-8624-89b98cc99a70 envoyé en file d'attente
+🎛️ USER PREFERENCES:
+{
+  "model_types": [
+    "qrnn"
+  ],
+  "comparison_mode": "pca",
+  "qrnn_backend": "qiskit",
+  "feature_selector": "pca",
+  "noise_enabled": false,
+  "noise_level": 0.0,
+  "mitigation_enabled": false,
+  "mitigation_runs": 1
+}
+🎛️ MANUAL OVERRIDES:
+{
+  "qrnn_epochs": 20,
+  "qrnn_batch_size": 16
+}
+INFO:     127.0.0.1:56971 - "POST /api/train/f358f294-7d02-4506-8624-89b98cc99a70 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "OPTIONS /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+🚀 Job f358f294-7d02-4506-8624-89b98cc99a70 envoyé au worker
+INFO:     35.252.191.129:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     35.252.191.129:0 - "GET /api/dataset/f358f294-7d02-4506-8624-89b98cc99a70 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+✅ Job f358f294-7d02-4506-8624-89b98cc99a70 terminé avec succès
+INFO:     35.252.191.129:0 - "POST /api/job/f358f294-7d02-4506-8624-89b98cc99a70/complete HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/job/f358f294-7d02-4506-8624-89b98cc99a70/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "OPTIONS /api/results/f358f294-7d02-4506-8624-89b98cc99a70 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56971 - "GET /api/results/f358f294-7d02-4506-8624-89b98cc99a70 HTTP/1.1" 200 OK
+INFO:     35.252.191.129:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61660 - "GET /api/report/f358f294-7d02-4506-8624-89b98cc99a70/pdf HTTP/1.1" 200 OK
+INFO:     35.252.191.129:0 - "GET /api/next-job HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56336 - "GET / HTTP/1.1" 200 OK
