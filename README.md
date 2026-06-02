@@ -31,7 +31,7 @@ The main objective of NeuroSpace is to make **Quantum Machine Learning (QML)** e
 
 NeuroSpace aims to answer the following question:
 
-> **Can a quantum or hybrid quantum-classical model provide better results than a classical model on a given classification dataset?**
+> **Can a quantum-classical model provide better results than a classical model on a given classification dataset?**
 
 The platform does not assume that quantum models are always better.  
 Instead, it provides a controlled experimental environment where classical and quantum models are trained and evaluated under the same conditions.
@@ -43,7 +43,7 @@ Instead, it provides a controlled experimental environment where classical and q
 NeuroSpace provides a complete environment for comparing:
 
 - **Classical neural models**, such as Multilayer Perceptron (**MLP**)
-- **Quantum or hybrid models**, such as Quantum Neural Networks (**QNN**)
+- **Quantum models**, such as Quantum Neural Networks (**QNN**)
 
 The platform focuses on:
 
@@ -89,9 +89,8 @@ NeuroSpace compares models using standard classification and complexity metrics:
 |---|---|
 | Classification | Accuracy, Precision, Recall, F1-score |
 | Evaluation | Confusion Matrix, Classification Report |
-| Complexity | Training Time, Inference Time |
-| Quantum Model | Number of Qubits, Circuit Depth |
-| Classical Model | Number of Parameters |
+| Complexity | Training Time |
+
 
 These metrics help users understand not only which model performs better, but also which model is more efficient and suitable for their dataset.
 
@@ -183,7 +182,6 @@ Python
 REST API
 Database and Authentication
 Supabase
-PostgreSQL
 Supabase Auth
 Supabase Storage
 Machine Learning
@@ -262,7 +260,7 @@ uvicorn main:app --reload
 
 The backend will usually run on:
 
-http://localhost:8000
+http://localhost:7000
 🔐 Environment Variables
 
 Create a .env file and add the required keys:
@@ -289,17 +287,6 @@ venv/
 
 Add them to .gitignore.
 
-🔮 Future Work
-
-Future improvements of NeuroSpace include:
-
-Adding more classical machine learning models
-Adding more quantum model architectures
-Improving the dashboard and visualizations
-Supporting image classification using CNN models
-Adding advanced model recommendation features
-Integrating real quantum machines through IBM Quantum if financial and technical resources become available
-Extending the platform for wider national and international use
 👥 Authors
 
 This project was developed by:
