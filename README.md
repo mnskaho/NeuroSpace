@@ -3,11 +3,8 @@
 # 🧠⚛️ NeuroSpace
 
 ### Classical AI vs Quantum Machine Learning Platform
-<<<<<<< HEAD
-
-=======
 https://neuro-space-seven.vercel.app/homepage
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
+
 **NeuroSpace** is an interactive web platform designed to compare classical machine learning models and quantum machine learning models for supervised classification tasks on numerical tabular datasets.
 
 <br/>
@@ -15,10 +12,6 @@ https://neuro-space-seven.vercel.app/homepage
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-TypeScript-blue?style=for-the-badge&logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python-green?style=for-the-badge&logo=fastapi)
-<<<<<<< HEAD
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)
-=======
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
 ![QML](https://img.shields.io/badge/Quantum-ML-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-CDDL%201.0-orange?style=for-the-badge)
 
@@ -38,11 +31,7 @@ The main objective of NeuroSpace is to make **Quantum Machine Learning (QML)** e
 
 NeuroSpace aims to answer the following question:
 
-<<<<<<< HEAD
-> **Can a quantum-classical model provide better results than a classical model on a given classification dataset?**
-=======
 > **Can a quantum model provide better results than a classical model on a given classification dataset?**
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
 
 The platform does not assume that quantum models are always better.  
 Instead, it provides a controlled experimental environment where classical and quantum models are trained and evaluated under the same conditions.
@@ -82,11 +71,7 @@ The only condition is that the dataset must be numerical, structured, and suitab
 - Detect missing values and incompatible data
 - Preprocess data before training
 - Train a classical MLP model
-<<<<<<< HEAD
-- Train a quantum or hybrid QNN model
-=======
 - Train a quantum QNN model
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
 - Compare models using classification metrics
 - Display learning curves
 - Generate confusion matrices
@@ -104,14 +89,7 @@ NeuroSpace compares models using standard classification and complexity metrics:
 |---|---|
 | Classification | Accuracy, Precision, Recall, F1-score |
 | Evaluation | Confusion Matrix, Classification Report |
-<<<<<<< HEAD
 | Complexity | Training Time |
-
-=======
-| Complexity | Training Time, Inference Time |
-| Quantum Model | Number of Qubits, Circuit Depth |
-| Classical Model | Number of Parameters |
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
 
 These metrics help users understand not only which model performs better, but also which model is more efficient and suitable for their dataset.
 
@@ -281,11 +259,7 @@ uvicorn main:app --reload
 
 The backend will usually run on:
 
-<<<<<<< HEAD
-http://localhost:7000
-=======
 http://localhost:8000
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
 🔐 Environment Variables
 
 Create a .env file and add the required keys:
@@ -311,25 +285,3 @@ __pycache__/
 venv/
 
 Add them to .gitignore.
-<<<<<<< HEAD
-
-👥 Authors
-
-This project was developed by:
-
-Horchi Abir Selma
-Kadri Manel
-Kadri Nourhene
-
-Supervised by:
-
-Dr. Khadir Mohamed Tarek
-
-Academic affiliation:
-
-University Badji Mokhtar – Annaba
-Faculty of Technology
-Department of Computer Science
-Master 2 SID
-=======
->>>>>>> df0c6bb1d40cd36921ccc854a5e56099d99ade97
