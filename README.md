@@ -11,7 +11,6 @@ https://neuro-space-seven.vercel.app/homepage
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-TypeScript-blue?style=for-the-badge&logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python-green?style=for-the-badge&logo=fastapi)
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)
 ![QML](https://img.shields.io/badge/Quantum-ML-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-CDDL%201.0-orange?style=for-the-badge)
 
