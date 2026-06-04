@@ -313,15 +313,15 @@
 //         alert("Please fill all Credit Card / Stripe fields");
 //         return;
 //       }
-//       alert(`Payment simulated via ${method.toUpperCase()} for 15 €`);
+//       alert(`Payment simulated via ${method.toUpperCase()} for 30 €`);
 //     } else if (method === "dahabia") {
 //       if (!dahabiaHolder || !dahabiaNumber || !dahabiaExpiry || !dahabiaCVC) {
 //         alert("Please fill all Dahabia fields");
 //         return;
 //       }
-//       alert("Payment simulated via CARTE DAHABIA for 15 €");
+//       alert("Payment simulated via CARTE DAHABIA for 30 €");
 //     } else if (method === "paypal") {
-//       alert("Redirecting to PayPal for 15 €");
+//       alert("Redirecting to PayPal for 30 €");
 //     }
 //   };
 
@@ -348,7 +348,7 @@
 
 //         {/* Price Card */}
 //         <div className="glass-cyan rounded-xl p-6 text-center mb-6">
-//           <div className="text-5xl font-display text-accent-cyan mb-1">15 €</div>
+//           <div className="text-5xl font-display text-accent-cyan mb-1">30 €</div>
 //           <div className="text-text-secondary text-sm mb-3">One-time payment</div>
 //           <div className="badge-info px-3 py-1 rounded-full inline-flex items-center gap-2 text-xs">
 //             🔒 Secure payment
@@ -640,7 +640,7 @@
 // <div className="glass-cyan rounded-xl p-6 text-center">
 
 // <div className="text-5xl font-display text-accent-cyan">
-// 15 €
+// 30 €
 // </div>
 
 // <div className="text-text-secondary text-sm mb-3">
@@ -896,7 +896,7 @@
 // selectedPlan==="Pro"
 // ?15
 // :selectedPlan==="Enterprise"
-// ?55.99
+// ?100
 // :0;
 
 
@@ -1053,8 +1053,8 @@
 
 // {[
 // {plan:"Free",price:"0€",train:"1"},
-// {plan:"Pro",price:"15€ / month",train:"10"},
-// {plan:"Enterprise",price:"55.99€ / month",train:"Unlimited"}
+// {plan:"Pro",price:"30€ / month",train:"25"},
+// {plan:"Enterprise",price:"100€ / month",train:"Unlimited"}
 // ].map((p)=>(
 
 // <button
@@ -1302,7 +1302,7 @@
 //   const [method, setMethod] = useState<PaymentMethod>("credit");
 //   const [selectedPlan, setSelectedPlan] = useState<"Free" | "Pro" | "Enterprise">("Pro");
 
-//   const price = selectedPlan === "Pro" ? 15 : selectedPlan === "Enterprise" ? 55.99 : 0;
+//   const price = selectedPlan === "Pro" ? 30 : selectedPlan === "Enterprise" ? 100 : 0;
 
 //   /* Credit */
 //   const [cardHolder, setCardHolder] = useState("");
@@ -1431,8 +1431,8 @@
 //         <div className="grid grid-cols-3 gap-3">
 //           {[
 //             { plan: "Free", price: "0€", train: "1" },
-//             { plan: "Pro", price: "15€ / month", train: "10" },
-//             { plan: "Enterprise", price: "55.99€ / month", train: "Unlimited" },
+//             { plan: "Pro", price: "30€ / month", train: "25" },
+//             { plan: "Enterprise", price: "100€ / month", train: "Unlimited" },
 //           ].map((p) => (
 //             <button
 //               key={p.plan}
@@ -1551,7 +1551,7 @@ export default function PaymentPage() {
   const [method, setMethod] = useState<PaymentMethod>("credit");
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("Pro");
 
-  const price = selectedPlan === "Pro" ? 15 : selectedPlan === "Enterprise" ? 55.99 : 0;
+  const price = selectedPlan === "Pro" ? 30 : selectedPlan === "Enterprise" ? 100 : 0;
 
   // Credit card
   const [cardHolder, setCardHolder] = useState("");
@@ -1690,10 +1690,10 @@ export default function PaymentPage() {
             >
               <div className="text-sm font-semibold text-text-primary">{p}</div>
               <div className="text-xs text-text-secondary mt-1">
-                {p === "Free" ? "0€" : p === "Pro" ? "15€ / month" : "55.99€ / month"}
+                {p === "Free" ? "0€" : p === "Pro" ? "30€ / month" : "100€ / month"}
               </div>
               <div className="text-xs mt-2 text-accent-cyan">
-                {p === "Free" ? "1" : p === "Pro" ? "10" : "Unlimited"} Trainings
+                {p === "Free" ? "1" : p === "Pro" ? "25" : "Unlimited"} Trainings
               </div>
             </button>
           ))}

@@ -1,6 +1,6 @@
 export const PLAN_LIMITS = {
 Free: 1,
-Pro: 10,
+Pro: 25,
 Enterprise: Infinity
 } as const;
 
