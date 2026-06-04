@@ -1,7 +1,13 @@
 <div align="center">
 
-# 🧠⚛️ NeuroSpace
+<div align="center">
 
+<h1>
+  <img src="assets/images/app_logo.png" alt="NeuroSpace Logo" width="55" align="center"/>
+  NeuroSpace
+</h1>
+
+</div>
 ### Classical AI vs Quantum Machine Learning Platform
 [https://neuro-space-seven.vercel.app/homepage](https://neuro-space-teal.vercel.app/homepage)
 
