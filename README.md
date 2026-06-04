@@ -259,7 +259,7 @@ uvicorn main:app --reload
 
 The backend will usually run on:
 
-http://localhost:8000
+http://localhost:7000
 🔐 Environment Variables
 
 Create a .env file and add the required keys:
