@@ -1546,7 +1546,7 @@ const plans: Array<{
   priceLabel: string;
   trainingLabel: string;
 }> = [
-  { plan: "Free", price: 0, priceLabel: "0€", trainingLabel: "1 Trainings" },
+  { plan: "Free", price: 0, priceLabel: "0€", trainingLabel: "1 Training" },
   { plan: "Pro", price: 150, priceLabel: "150€ / month", trainingLabel: "5 Trainings" },
   { plan: "Pro+", price: 500, priceLabel: "500€ / month", trainingLabel: "25 Trainings" },
 ];
