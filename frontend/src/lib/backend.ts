@@ -73,7 +73,7 @@ export function uploadDataset(file: File) {
   const formData = new FormData();
   formData.append('file', file);
 
-  return backendFetch<UploadDatasetResponse>('/upload', {
+  return backendFetch<UploadDatasetResponse>('/api/upload', {
     method: 'POST',
     body: formData,
   });
