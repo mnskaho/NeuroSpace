@@ -31,8 +31,8 @@ export async function POST(req: Request) {
     const { plan } = await req.json();
 
     const prices: Record<string, number> = {
-      Pro: 30,
-      Enterprise: 100,
+      Pro: 150,
+      "Pro+": 500,
     };
 
     const amount = prices[plan];
