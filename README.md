@@ -11,7 +11,7 @@
 
 ### Classical AI vs Quantum Machine Learning Platform
 
-[https://neuro-space-seven.vercel.app/homepage](https://neuro-space-teal.vercel.app/homepage)
+[https://neuro-space-teal.vercel.app](https://neuro-space-teal.vercel.app/homepage)
 
 
 **NeuroSpace** is an interactive web platform designed to compare classical machine learning models and quantum machine learning models for supervised classification tasks on numerical tabular datasets.
