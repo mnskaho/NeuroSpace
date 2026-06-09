@@ -1538,7 +1538,18 @@ import PayPalButton from "./components/PayPalButton";
 import emailjs from "@emailjs/browser";
 
 type PaymentMethod = "credit" | "paypal" | "dahabia";
-type PlanType = "Free" | "Pro" | "Enterprise";
+type PlanType = "Free" | "Pro" | "Pro+";
+
+const plans: Array<{
+  plan: PlanType;
+  price: number;
+  priceLabel: string;
+  trainingLabel: string;
+}> = [
+  { plan: "Free", price: 0, priceLabel: "0€", trainingLabel: "1 Trainings" },
+  { plan: "Pro", price: 150, priceLabel: "150€ / month", trainingLabel: "5 Trainings" },
+  { plan: "Pro+", price: 500, priceLabel: "500€ / month", trainingLabel: "25 Trainings" },
+];
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -1551,7 +1562,7 @@ export default function PaymentPage() {
   const [method, setMethod] = useState<PaymentMethod>("credit");
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("Pro");
 
-  const price = selectedPlan === "Pro" ? 30 : selectedPlan === "Enterprise" ? 100 : 0;
+  const price = plans.find((item) => item.plan === selectedPlan)?.price ?? 0;
 
   // Credit card
   const [cardHolder, setCardHolder] = useState("");
@@ -1680,21 +1691,17 @@ export default function PaymentPage() {
 
         {/* Plans */}
         <div className="grid grid-cols-3 gap-3">
-          {["Free", "Pro", "Enterprise"].map((p) => (
+          {plans.map((p) => (
             <button
-              key={p}
-              onClick={() => setSelectedPlan(p as PlanType)}
+              key={p.plan}
+              onClick={() => setSelectedPlan(p.plan)}
               className={`rounded-xl border p-4 text-center transition ${
-                selectedPlan === p ? "border-accent-cyan bg-accent-cyan/10" : "border-border glass hover:border-accent-cyan/40"
+                selectedPlan === p.plan ? "border-accent-cyan bg-accent-cyan/10" : "border-border glass hover:border-accent-cyan/40"
               }`}
             >
-              <div className="text-sm font-semibold text-text-primary">{p}</div>
-              <div className="text-xs text-text-secondary mt-1">
-                {p === "Free" ? "0€" : p === "Pro" ? "30€ / month" : "100€ / month"}
-              </div>
-              <div className="text-xs mt-2 text-accent-cyan">
-                {p === "Free" ? "1" : p === "Pro" ? "25" : "Unlimited"} Trainings
-              </div>
+              <div className="text-sm font-semibold text-text-primary">{p.plan}</div>
+              <div className="text-xs text-text-secondary mt-1">{p.priceLabel}</div>
+              <div className="text-xs mt-2 text-accent-cyan">{p.trainingLabel}</div>
             </button>
           ))}
         </div>

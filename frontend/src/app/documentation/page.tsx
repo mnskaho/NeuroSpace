@@ -125,7 +125,7 @@ const sections = [
     icon: CreditCard,
     title: "Payment, Invoices, and Profile",
     content: [
-      "The Payment page lets users choose a Free, Pro, or Enterprise plan, then select Credit Card, Dahabia, or PayPal as the payment method.",
+      "The Payment page lets users choose a Free, Pro, or Pro+ plan, then select Credit Card, Dahabia, or PayPal as the payment method.",
       "After payment, Payment Success shows the confirmation, invoice, plan, amount, method, date, and transaction ID.",
       "Billing lists payment history and opens invoices. Profile and settings remain available from the dashboard.",
     ],
