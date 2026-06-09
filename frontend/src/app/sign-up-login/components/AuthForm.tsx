@@ -641,6 +641,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import Icon from "@/components/ui/AppIcon";
 
@@ -1087,19 +1088,19 @@ const signInWithGithub = async () => {
 
           <p className="text-center font-mono text-[10px] text-text-muted mt-4">
             By continuing, you agree to our{" "}
-            <a
-              href="#"
+            <Link
+              href="/terms"
               className="text-quantum-purple hover:text-quantum-violet"
             >
               Terms
-            </a>{" "}
+            </Link>{" "}
             and{" "}
-            <a
-              href="#"
+            <Link
+              href="/privacy-policy"
               className="text-quantum-purple hover:text-quantum-violet"
             >
               Privacy Policy
-            </a>
+            </Link>
           </p>
         </div>
       </div>
