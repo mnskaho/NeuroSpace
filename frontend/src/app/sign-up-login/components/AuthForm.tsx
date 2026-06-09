@@ -674,6 +674,17 @@ const getErrorMessage = (error: unknown) => {
   return "An unexpected error occurred";
 };
 
+const getSiteUrl = () => {
+  // OAuth should return to the origin the user is actually on, so Vercel never reuses a local env URL.
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:4028";
+};
+
+const getOAuthRedirectUrl = () => `${getSiteUrl()}/oauth-callback`;
+
 export default function AuthForm() {
   const [tab, setTab] = useState<Tab>("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -804,15 +815,23 @@ setTimeout(() => {
 
   /* ---------------- GOOGLE LOGIN ---------------- */
  const signInWithGoogle = async () => {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/oauth-callback`,
-      queryParams: {
-        prompt: "select_account", // force Google à afficher le choix du compte
+  setLoading(true);
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: getOAuthRedirectUrl(),
+        queryParams: {
+          prompt: "select_account", // force Google à afficher le choix du compte
+        },
       },
-    },
-  });
+    });
+    if (error) throw error;
+  } catch (err: any) {
+    console.error("Google OAuth error:", err.message);
+    addToast(`âŒ ${err.message || "Google sign-in failed"}`, "error");
+    setLoading(false);
+  }
 };
 
 const signInWithGithub = async () => {
@@ -822,7 +841,7 @@ const signInWithGithub = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/oauth-callback`,
+        redirectTo: getOAuthRedirectUrl(),
         scopes: "read:user user:email",
       },
     });
