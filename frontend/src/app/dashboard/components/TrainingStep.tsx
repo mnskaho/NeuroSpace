@@ -248,7 +248,7 @@ export default function TrainingStep({
       setJobId(response.job_id);
       setStatus('Backend job queued.');
       toast.success(
-        'Your training has started. Your report will be sent automatically to your account email when it is ready.'
+        'Your training has started. Your report will be sent automatically to your email account when it is ready.'
       );
 
       pollRef.current = window.setInterval(async () => {
