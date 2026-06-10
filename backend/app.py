@@ -5779,15 +5779,8 @@ def send_report_email(
                     "name": f"neurospace-report-{file_id}.pdf",
                 }
             )
-
-        if json_path and json_path.exists():
-            with open(json_path, "rb") as f:
-                attachments.append(
-                    {
-                        "content": base64.b64encode(f.read()).decode("ascii"),
-                        "name": f"results-{file_id}.json",
-                    }
-                )
+        print("PDF attachment added", flush=True)
+        print("Attachment count:", len(attachments), flush=True)
 
         payload = {
             "sender": {"name": sender_name, "email": sender_email},
