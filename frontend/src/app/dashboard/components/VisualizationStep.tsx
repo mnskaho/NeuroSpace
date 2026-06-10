@@ -109,6 +109,7 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
   const hasRnnCurves = Boolean(rnnHistory);
   const hasQrnnCurves = Boolean(qrnnHistory);
   const jobId = trainingResults.job_id;
+  const datasetName = trainingResults.dataset_name || 'Unknown Dataset';
 
   const tabs = [
     { id: 'curves', label: 'Learning Curves' },
@@ -159,6 +160,22 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
         <p className="max-w-2xl text-sm text-slate-400">
           Visualize backend curves when available and export the completed job.
         </p>
+      </div>
+
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {[
+          ['Dataset', datasetName],
+          ['Job ID', jobId || '-'],
+        ].map(([label, value]) => (
+          <div key={label} className="glass rounded-xl border border-quantum-purple/10 p-4">
+            <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-text-muted">
+              {label}
+            </div>
+            <div className="break-words font-mono text-sm font-bold text-text-primary">
+              {value}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="mb-10 flex gap-2 rounded-3xl border border-white/10 bg-[#071126] p-2 overflow-x-auto">

@@ -1936,6 +1936,7 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 SUPABASE_TABLE = "training_jobs"
 SUPABASE_REPORTS_BUCKET = os.getenv("SUPABASE_REPORTS_BUCKET", "reports")
+UNKNOWN_DATASET_NAME = "Unknown Dataset"
 
 BREVO_SMTP_HOST = os.getenv("BREVO_SMTP_HOST", "smtp-relay.brevo.com")
 BREVO_SMTP_PORT = int(os.getenv("BREVO_SMTP_PORT", "587"))
@@ -2505,7 +2506,51 @@ def is_feature_column(column_name: str) -> bool:
     return True
 
 
-def build_dataset_info(file_path: Path):
+def clean_dataset_name(filename):
+    if not filename:
+        return UNKNOWN_DATASET_NAME
+    name = str(filename).replace("\\", "/").split("/")[-1].strip()
+    return name or UNKNOWN_DATASET_NAME
+
+
+def infer_dataset_name_from_path(file_path):
+    if not file_path:
+        return UNKNOWN_DATASET_NAME
+    name = clean_dataset_name(Path(str(file_path)).name)
+    parts = name.split("_", 1)
+    if len(parts) == 2:
+        try:
+            uuid.UUID(parts[0])
+            return clean_dataset_name(parts[1])
+        except ValueError:
+            pass
+    return name
+
+
+def dataset_name_from_sources(*sources):
+    for source in sources:
+        if isinstance(source, dict):
+            for key in ("dataset_name", "filename", "name"):
+                value = source.get(key)
+                if value:
+                    name = clean_dataset_name(value)
+                    if name != UNKNOWN_DATASET_NAME:
+                        return name
+        elif source:
+            name = clean_dataset_name(source)
+            if name != UNKNOWN_DATASET_NAME:
+                return name
+    return UNKNOWN_DATASET_NAME
+
+
+def ensure_dataset_name_in_results(results, dataset_name):
+    if not isinstance(results, dict):
+        return results
+    results["dataset_name"] = dataset_name or UNKNOWN_DATASET_NAME
+    return results
+
+
+def build_dataset_info(file_path: Path, dataset_name=None):
     separator = detect_separator(file_path)
     df = pd.read_csv(file_path, sep=separator)
 
@@ -2566,6 +2611,7 @@ def build_dataset_info(file_path: Path):
     pca_dimension = int(2**n_qubits)
 
     return {
+        "dataset_name": clean_dataset_name(dataset_name),
         "samples": n_samples,
         "features": n_features,
         "classes": n_classes,
@@ -2583,30 +2629,33 @@ def build_dataset_info(file_path: Path):
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        if not file.filename.lower().endswith(".csv"):
+        original_filename = clean_dataset_name(file.filename)
+
+        if not original_filename.lower().endswith(".csv"):
             raise HTTPException(
                 status_code=400,
                 detail="Seuls les fichiers CSV sont acceptés",
             )
 
         file_id = str(uuid.uuid4())
-        safe_filename = f"{file_id}_{file.filename}"
+        safe_filename = f"{file_id}_{original_filename}"
         file_path = UPLOAD_DIR / safe_filename
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        dataset_info = build_dataset_info(file_path)
+        dataset_info = build_dataset_info(file_path, original_filename)
 
         print(f"✅ Dataset uploaded: {file_id}")
-        print(f"   filename: {file.filename}")
+        print(f"   filename: {original_filename}")
         print(f"   file_path: {file_path}")
         print(f"   dataset_info: {dataset_info}")
 
         return {
             "success": True,
             "file_id": file_id,
-            "filename": file.filename,
+            "filename": original_filename,
+            "dataset_name": original_filename,
             "file_path": str(file_path),
             "dataset_info": dataset_info,
         }
@@ -2633,20 +2682,29 @@ async def start_training(file_id: str, request: Request):
         config = normalize_training_config(raw_config)
         dataset_info = body.get("dataset_info") or coerce_json_object(raw_config).get("dataset_info") or {}
 
-        filename = body.get("filename")
+        dataset_name = dataset_name_from_sources(body.get("dataset_name"), dataset_info, body.get("filename"))
+        filename = dataset_name if dataset_name != UNKNOWN_DATASET_NAME else body.get("filename")
         file_path = body.get("file_path")
 
         if not file_path:
             matches = list(UPLOAD_DIR.glob(f"{file_id}_*.csv"))
             if matches:
                 file_path = str(matches[0])
-                filename = filename or matches[0].name
+                inferred_name = infer_dataset_name_from_path(matches[0])
+                filename = filename or inferred_name
+                dataset_name = dataset_name_from_sources(dataset_name, inferred_name)
 
         existing_job = supabase_select_one_by_file_id(file_id)
 
         if existing_job:
             file_path = file_path or existing_job.get("file_path")
             filename = filename or existing_job.get("filename")
+            dataset_name = dataset_name_from_sources(
+                dataset_name,
+                existing_job.get("dataset_info") or {},
+                existing_job.get("filename"),
+                infer_dataset_name_from_path(file_path),
+            )
 
         if not file_path:
             raise HTTPException(
@@ -2658,7 +2716,9 @@ async def start_training(file_id: str, request: Request):
             )
 
         if not dataset_info:
-            dataset_info = build_dataset_info(Path(file_path))
+            dataset_info = build_dataset_info(Path(file_path), dataset_name)
+
+        dataset_info["dataset_name"] = dataset_name
 
         if not existing_job:
             raise HTTPException(
@@ -2693,6 +2753,7 @@ async def start_training(file_id: str, request: Request):
             "message": "Training job queued",
             "file_id": file_id,
             "job_id": file_id,
+            "dataset_name": dataset_name,
         }
 
     except HTTPException:
@@ -3295,6 +3356,8 @@ def generate_pdf_report(file_id: str, results: dict, output_path: Path):
         canvas_obj.drawRightString(A4[0] - 36, 22, f"Page {doc.page}")
         canvas_obj.restoreState()
 
+    dataset_name = dataset_name_from_sources(results)
+
     story = []
     logo_candidates = [
         BASE_DIR.parent / "frontend" / "public" / "assets" / "images" / "app_logo1.png",
@@ -3322,6 +3385,7 @@ def generate_pdf_report(file_id: str, results: dict, output_path: Path):
     story.append(
         make_table(
             [
+                ["Dataset", dataset_name],
                 ["Job ID", file_id],
                 ["Status", str(results.get("status", "completed"))],
                 ["Result timestamp", str(results.get("timestamp") or "-")],
@@ -3546,6 +3610,15 @@ async def complete_job(file_id: str, request: Request):
 
         user_email = job.get("user_email")
         user_name = job.get("user_name")
+        dataset_name = dataset_name_from_sources(
+            results,
+            job.get("dataset_info") or {},
+            job.get("filename"),
+            infer_dataset_name_from_path(job.get("file_path")),
+        )
+        results["job_id"] = file_id
+        results["status"] = results.get("status") or "completed"
+        ensure_dataset_name_in_results(results, dataset_name)
 
         if not user_email:
             raise HTTPException(
@@ -3614,6 +3687,7 @@ async def complete_job(file_id: str, request: Request):
         return {
             "success": True,
             "file_id": file_id,
+            "dataset_name": dataset_name,
             "message": "Job completed",
             "email_sent": bool(email_result.get("success")),
             "email_error": None if email_result.get("success") else email_result.get("error"),
@@ -3703,9 +3777,17 @@ async def get_job_status(file_id: str):
         if not job:
             raise HTTPException(status_code=404, detail="Job non trouvé")
 
+        dataset_name = dataset_name_from_sources(
+            job.get("results") if isinstance(job.get("results"), dict) else {},
+            job.get("dataset_info") or {},
+            job.get("filename"),
+            infer_dataset_name_from_path(job.get("file_path")),
+        )
+
         return {
             "job_id": file_id,
             "file_id": file_id,
+            "dataset_name": dataset_name,
             "status": job.get("status"),
             "message": job.get("error_message") if job.get("status") == "failed" else None,
             "error": job.get("error_message"),
@@ -3740,15 +3822,28 @@ async def get_results(file_id: str):
             )
 
         results = job.get("results")
+        dataset_name = dataset_name_from_sources(
+            results if isinstance(results, dict) else {},
+            job.get("dataset_info") or {},
+            job.get("filename"),
+            infer_dataset_name_from_path(job.get("file_path")),
+        )
 
         if results:
+            if isinstance(results, dict):
+                results["job_id"] = results.get("job_id") or file_id
+                ensure_dataset_name_in_results(results, dataset_name)
             return results
 
         json_path = job.get("json_path")
 
         if json_path and Path(json_path).exists():
             with open(json_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                results = json.load(f)
+                if isinstance(results, dict):
+                    results["job_id"] = results.get("job_id") or file_id
+                    ensure_dataset_name_in_results(results, dataset_name)
+                return results
 
         raise HTTPException(status_code=404, detail="Résultats introuvables")
 
@@ -3831,7 +3926,7 @@ async def debug_jobs():
         url = supabase_rest_url(SUPABASE_TABLE)
 
         params = {
-            "select": "file_id,user_email,status,created_at,started_at,completed_at,file_path,filename",
+            "select": "file_id,user_email,status,created_at,started_at,completed_at,file_path,filename,dataset_info",
             "order": "created_at.desc",
             "limit": "10",
         }

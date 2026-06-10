@@ -95,7 +95,8 @@ export default function UploadStep({ onComplete }: UploadStepProps) {
 
       const metadata: DatasetMeta = {
         uploadId: response.file_id,
-        filename: file.name,
+        filename: response.dataset_name || response.filename || file.name,
+        filePath: response.file_path,
         rows: response.dataset_info.samples,
         columns: response.dataset_info.features,
         targetColumn: response.dataset_info.target_column,
@@ -179,7 +180,9 @@ export default function UploadStep({ onComplete }: UploadStepProps) {
                 <div className="w-16 h-16 rounded-2xl bg-quantum-teal/10 border border-quantum-teal/30 flex items-center justify-center">
                   <Icon name="DocumentCheckIcon" size={32} className="text-quantum-teal" />
                 </div>
-                <div className="font-mono font-bold text-text-primary">{uploaded}</div>
+                <div className="font-mono font-bold text-text-primary break-words">
+                  Dataset: {uploaded}
+                </div>
                 {datasetInfo && (
                   <div className="text-xs text-text-muted">
                     Records: {datasetInfo.records} | Features: {datasetInfo.features} | Size:{' '}
@@ -247,7 +250,7 @@ export default function UploadStep({ onComplete }: UploadStepProps) {
           <h3 className="font-mono font-bold text-sm text-text-primary mb-4">Dataset Ready</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              ['Filename', datasetMeta.filename],
+              ['Dataset', datasetMeta.filename],
               ['Dimensions', `${datasetMeta.rows} x ${datasetMeta.columns}`],
               ['Target', datasetMeta.targetColumn],
               ['Classes', datasetMeta.numClasses],

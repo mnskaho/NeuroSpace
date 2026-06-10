@@ -4,6 +4,7 @@ export type ModelType = 'rnn' | 'qrnn';
 export interface DatasetMeta {
   uploadId: string;
   filename: string;
+  filePath?: string;
   rows: number;
   columns: number;
   targetColumn: string;
@@ -83,6 +84,7 @@ export interface TrainingMetricBlock {
 
 export interface TrainingResults {
   job_id?: string;
+  dataset_name?: string;
   status?: string;
   timestamp?: string;
   rnn?: TrainingMetricBlock;

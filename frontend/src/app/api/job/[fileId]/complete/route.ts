@@ -10,6 +10,21 @@ import { addFormattedTrainingTimes } from '@/lib/results/trainingTime';
 import type { TrainingResults } from '@/app/dashboard/components/types';
 
 export const runtime = 'nodejs';
+const UNKNOWN_DATASET_NAME = 'Unknown Dataset';
+
+function getDatasetName(job: Awaited<ReturnType<typeof findJobByFileId>>, results: TrainingResults) {
+  if (typeof results.dataset_name === 'string' && results.dataset_name.trim()) {
+    return results.dataset_name.trim();
+  }
+
+  const datasetInfo = job?.dataset_info;
+  if (datasetInfo && typeof datasetInfo === 'object' && !Array.isArray(datasetInfo)) {
+    const name = datasetInfo.dataset_name || datasetInfo.filename || datasetInfo.name;
+    if (typeof name === 'string' && name.trim()) return name.trim();
+  }
+
+  return job?.filename || UNKNOWN_DATASET_NAME;
+}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
   try {
@@ -20,6 +35,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
     if (!job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
+
+    const datasetName = getDatasetName(job, results);
+    const completedResults: TrainingResults = {
+      ...results,
+      job_id: fileId,
+      dataset_name: datasetName,
+      status: results.status || 'completed',
+    };
 
     const userEmail = job.user_email;
     if (!userEmail) {
@@ -32,17 +55,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
     const jsonPath = path.join(resultDir, 'results.json');
     const pdfPath = path.join(resultDir, 'report.pdf');
 
-    await fs.writeFile(jsonPath, JSON.stringify(results, null, 2), 'utf-8');
+    await fs.writeFile(jsonPath, JSON.stringify(completedResults, null, 2), 'utf-8');
     console.log('Results JSON saved');
 
-    await generateTrainingReportPdf({ fileId, results, outputPath: pdfPath });
+    await generateTrainingReportPdf({ fileId, results: completedResults, outputPath: pdfPath });
     console.log('PDF generated');
     console.log('PDF path', pdfPath);
 
     const completedAt = new Date().toISOString();
     await updateJobByFileId(fileId, {
       status: 'completed',
-      results,
+      results: completedResults,
       pdf_path: pdfPath,
       json_path: jsonPath,
       completed_at: completedAt,
@@ -57,9 +80,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
       fileId,
       pdfPath,
       jsonPath,
-      modelName: extractModelName(results),
-      accuracy: extractAccuracy(results),
-      createdAt: results?.timestamp || completedAt,
+      modelName: extractModelName(completedResults),
+      accuracy: extractAccuracy(completedResults),
+      createdAt: completedResults?.timestamp || completedAt,
     });
 
     if (emailResult.success) {
@@ -79,6 +102,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
     return NextResponse.json({
       success: true,
       fileId,
+      dataset_name: datasetName,
       email_sent: emailResult.success,
       email_error: emailResult.success ? null : emailResult.error,
     });

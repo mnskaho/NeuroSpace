@@ -46,7 +46,10 @@ async function appFetch<T>(path: string, options: RequestInit = {}) {
 export interface UploadDatasetResponse {
   file_id: string;
   filename: string;
+  dataset_name?: string;
+  file_path?: string;
   dataset_info: {
+    dataset_name?: string;
     samples: number;
     features: number;
     target_column: string;
@@ -57,11 +60,13 @@ export interface UploadDatasetResponse {
 
 export interface StartTrainingResponse {
   job_id: string;
+  dataset_name?: string;
   status: string;
 }
 
 export interface JobStatusResponse {
   job_id: string;
+  dataset_name?: string;
   status: 'uploaded' | 'queued' | 'processing' | 'running' | 'completed' | 'failed';
   progress?: number;
   message?: string;
