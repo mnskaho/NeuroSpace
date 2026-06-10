@@ -65,8 +65,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
       user_email: user.email,
       user_name: userName,
       status: 'queued',
-      filename: datasetName,
-      file_path: typeof body.file_path === 'string' ? body.file_path : null,
       config,
       dataset_info: datasetInfo,
     });
@@ -85,6 +83,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
     });
   } catch (error) {
     console.error('Create training job error:', error);
-    return NextResponse.json({ error: 'Failed to create training job' }, { status: 500 });
+    const detail = error instanceof Error ? error.message : 'Unknown create training job error';
+    return NextResponse.json({ error: 'Failed to create training job', detail }, { status: 500 });
   }
 }
