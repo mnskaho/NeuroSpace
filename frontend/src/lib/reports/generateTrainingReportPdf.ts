@@ -30,9 +30,11 @@ export async function generateTrainingReportPdf({
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
   const blocks = getResultBlocks(results);
+  const datasetName = results.dataset_name || 'Unknown Dataset';
   const lines = [
     'NeuroSpace Training Report',
     '',
+    `Dataset: ${datasetName}`,
     `Job ID: ${fileId}`,
     `Date: ${new Date().toISOString()}`,
     `Status: ${String(results.status ?? 'completed')}`,

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getNextQueuedJob, updateJobByFileId } from '@/lib/jobs/trainingJobs';
 
 export const runtime = 'nodejs';
+const UNKNOWN_DATASET_NAME = 'Unknown Dataset';
 
 function asObject(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -12,6 +13,12 @@ function asObject(value: unknown): Record<string, unknown> {
 
 function asNumber(value: unknown, fallback: number) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function getDatasetName(job: NonNullable<Awaited<ReturnType<typeof getNextQueuedJob>>>) {
+  const datasetInfo = asObject(job.dataset_info);
+  const name = datasetInfo.dataset_name || datasetInfo.filename || datasetInfo.name || job.filename;
+  return typeof name === 'string' && name.trim() ? name.trim() : UNKNOWN_DATASET_NAME;
 }
 
 function normalizeTrainingConfig(rawConfig: unknown) {
@@ -69,10 +76,16 @@ export async function GET() {
     }
 
     const normalizedConfig = normalizeTrainingConfig(job.config);
+    const datasetName = getDatasetName(job);
+    const datasetInfo = {
+      ...asObject(job.dataset_info),
+      dataset_name: datasetName,
+    };
 
     await updateJobByFileId(job.file_id, {
       status: 'processing',
       config: normalizedConfig,
+      dataset_info: datasetInfo,
       started_at: new Date().toISOString(),
     });
 
@@ -84,13 +97,15 @@ export async function GET() {
       status: 'success',
       job_id: job.file_id,
       file_id: job.file_id,
+      dataset_name: datasetName,
       config: normalizedConfig,
       job: {
         file_id: job.file_id,
-        dataset_info: job.dataset_info,
+        dataset_name: datasetName,
+        dataset_info: datasetInfo,
         ...normalizedConfig,
       },
-      dataset_info: job.dataset_info,
+      dataset_info: datasetInfo,
       user_preferences: normalizedConfig.user_preferences,
       manual_overrides: normalizedConfig.manual_overrides,
     });

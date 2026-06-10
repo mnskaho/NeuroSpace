@@ -6,6 +6,8 @@ export type TrainingJobData = {
   user_email: string;
   user_name?: string | null;
   status: string;
+  filename?: string | null;
+  file_path?: string | null;
   config?: Record<string, unknown> | null;
   dataset_info?: Record<string, unknown> | null;
 };

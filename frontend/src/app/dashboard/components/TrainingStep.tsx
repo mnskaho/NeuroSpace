@@ -118,7 +118,7 @@ export default function TrainingStep({
 
     await supabase.from('trainings').insert({
       user_id: user.id,
-      dataset_name: datasetMeta?.filename || 'dataset',
+      dataset_name: datasetMeta?.filename || 'Unknown Dataset',
     });
   };
 
@@ -232,7 +232,11 @@ export default function TrainingStep({
         datasetMeta.uploadId,
         {
           config: payload,
+          dataset_name: datasetMeta.filename,
+          filename: datasetMeta.filename,
+          file_path: datasetMeta.filePath,
           dataset_info: {
+            dataset_name: datasetMeta.filename,
             samples: datasetMeta.rows,
             features: datasetMeta.columns,
             classes: datasetMeta.numClasses,
