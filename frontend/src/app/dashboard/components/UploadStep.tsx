@@ -5,9 +5,6 @@ import { toast } from 'sonner';
 
 import Icon from '@/components/ui/AppIcon';
 import { uploadDataset } from '@/lib/backend';
-import { getUserPlan } from '@/lib/getUserPlan';
-import { getTrainingCount } from '@/lib/getUserTrainings';
-import { PLAN_LIMITS } from '@/lib/plans';
 import { validateDataset } from '@/lib/validateDataset';
 import type { DatasetMeta } from '@/app/dashboard/components/types';
 
@@ -124,18 +121,9 @@ export default function UploadStep({ onComplete }: UploadStepProps) {
     if (file) handleFile(file);
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!datasetMeta) {
       toast.error('Dataset metadata missing');
-      return;
-    }
-
-    const plan = (await getUserPlan()) as keyof typeof PLAN_LIMITS;
-    const trainings = await getTrainingCount();
-    const limit = PLAN_LIMITS[plan];
-
-    if (trainings >= limit) {
-      toast.error('Training limit reached. Upgrade to premium');
       return;
     }
 

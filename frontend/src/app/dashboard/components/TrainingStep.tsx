@@ -31,6 +31,7 @@ interface TrainingStepProps {
   datasetMeta: DatasetMeta | null;
   modelConfig: ModelConfig;
   onTrainingComplete: (results: TrainingResults) => void;
+  onTrainingUsageChanged?: () => void;
   onComplete: () => void;
 }
 
@@ -38,6 +39,7 @@ export default function TrainingStep({
   datasetMeta,
   modelConfig,
   onTrainingComplete,
+  onTrainingUsageChanged,
   onComplete,
 }: TrainingStepProps) {
   const [running, setRunning] = useState(false);
@@ -108,19 +110,6 @@ export default function TrainingStep({
       clearSlowResultsTimer();
     };
   }, []);
-
-  const saveTraining = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    await supabase.from('trainings').insert({
-      user_id: user.id,
-      dataset_name: datasetMeta?.filename || 'Unknown Dataset',
-    });
-  };
 
   const clearPolling = () => {
     if (pollRef.current) {
@@ -218,14 +207,27 @@ export default function TrainingStep({
         showSlowResultsToast();
       }, SLOW_RESULTS_TOAST_DELAY_MS);
 
-      await saveTraining();
-
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
         throw new Error('Authentication required');
+      }
+
+      const usageResponse = await fetch('/api/user/training-usage', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!usageResponse.ok) {
+        throw new Error('Unable to verify monthly training usage.');
+      }
+
+      const usage = (await usageResponse.json()) as { used: number; limit: number };
+      if (Math.min(usage.used, usage.limit) >= usage.limit) {
+        throw new Error('Monthly training limit reached. Please upgrade your plan.');
       }
 
       const response = await startBackendTraining(
@@ -271,6 +273,7 @@ export default function TrainingStep({
               clearPolling();
               clearSlowResultsTimer();
               onTrainingComplete(completedResults);
+              onTrainingUsageChanged?.();
               setProgress(100);
               setRunning(false);
               setStatus('Training completed.');

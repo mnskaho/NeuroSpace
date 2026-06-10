@@ -125,7 +125,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import UploadStep from './UploadStep';
@@ -150,6 +150,12 @@ const supabase = createClient(
 
 type StepId = PipelineStep;
 const stepOrder: StepId[] = ['upload', 'model', 'training', 'evaluation', 'visualization'];
+
+type TrainingUsage = {
+  plan: 'free' | 'pro' | 'pro_plus';
+  used: number;
+  limit: number;
+};
 
 // ------------------- Profile Menu -------------------
 function ProfileMenu() {
@@ -261,6 +267,33 @@ export default function DashboardInteractive() {
   const [datasetMeta, setDatasetMeta] = useState<DatasetMeta | null>(null);
   const [modelConfig, setModelConfig] = useState<ModelConfig>(defaultModelConfig);
   const [trainingResults, setTrainingResults] = useState<TrainingResults>({});
+  const [trainingUsage, setTrainingUsage] = useState<TrainingUsage>({
+    plan: 'free',
+    used: 0,
+    limit: 1,
+  });
+
+  const loadTrainingUsage = useCallback(async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setTrainingUsage({ plan: 'free', used: 0, limit: 1 });
+      return;
+    }
+
+    const response = await fetch('/api/user/training-usage', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!response.ok) return;
+
+    const usage = (await response.json()) as TrainingUsage;
+    setTrainingUsage(usage);
+  }, []);
 
   // ✅ Nettoyer l'URL après login pour enlever tous les tokens
   useEffect(() => {
@@ -268,6 +301,16 @@ export default function DashboardInteractive() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  useEffect(() => {
+    loadTrainingUsage();
+  }, [loadTrainingUsage]);
+
+  useEffect(() => {
+    if (activeStep === 'evaluation' || activeStep === 'visualization') {
+      loadTrainingUsage();
+    }
+  }, [activeStep, loadTrainingUsage]);
 
   const handleStepComplete = () => {
     const currentIndex = stepOrder.indexOf(activeStep);
@@ -306,6 +349,7 @@ export default function DashboardInteractive() {
         datasetMeta={datasetMeta}
         modelConfig={modelConfig}
         onTrainingComplete={setTrainingResults}
+        onTrainingUsageChanged={loadTrainingUsage}
         onComplete={handleStepComplete}
       />
     ),
@@ -368,7 +412,7 @@ export default function DashboardInteractive() {
             <div className="hidden md:flex items-center gap-2 glass px-3 py-1.5 rounded-lg">
               <span className="w-2 h-2 rounded-full bg-quantum-teal animate-pulse" />
               <span className="font-mono text-[10px] text-quantum-teal tracking-wider">
-                {completedSteps.length}/{stepOrder.length} Complete
+                {Math.min(trainingUsage.used, trainingUsage.limit)}/{trainingUsage.limit} Trainings
               </span>
             </div>
 
