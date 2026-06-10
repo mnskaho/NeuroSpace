@@ -6,14 +6,14 @@ export type TrainingJobData = {
   user_email: string;
   user_name?: string | null;
   status: string;
-  filename?: string | null;
-  file_path?: string | null;
   config?: Record<string, unknown> | null;
   dataset_info?: Record<string, unknown> | null;
 };
 
 export type TrainingJob = TrainingJobData & {
   id?: string;
+  filename?: string | null;
+  file_path?: string | null;
   results?: unknown;
   pdf_path?: string | null;
   json_path?: string | null;
@@ -32,7 +32,13 @@ export async function createTrainingJob(data: TrainingJobData) {
   const { data: job, error } = await supabaseAdmin
     .from('training_jobs')
     .insert({
-      ...data,
+      file_id: data.file_id,
+      user_id: data.user_id,
+      user_email: data.user_email,
+      user_name: data.user_name ?? null,
+      status: data.status,
+      config: data.config ?? null,
+      dataset_info: data.dataset_info ?? null,
       email_sent: false,
       email_sent_to: null,
       email_sent_at: null,
