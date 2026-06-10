@@ -65,6 +65,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
       user_email: user.email,
       user_name: userName,
       status: 'queued',
+      dataset_name: datasetName,
       config,
       dataset_info: datasetInfo,
     });

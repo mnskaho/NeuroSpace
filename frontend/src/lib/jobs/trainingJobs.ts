@@ -6,6 +6,7 @@ export type TrainingJobData = {
   user_email: string;
   user_name?: string | null;
   status: string;
+  dataset_name?: string | null;
   config?: Record<string, unknown> | null;
   dataset_info?: Record<string, unknown> | null;
 };
@@ -37,6 +38,7 @@ export async function createTrainingJob(data: TrainingJobData) {
       user_email: data.user_email,
       user_name: data.user_name ?? null,
       status: data.status,
+      dataset_name: data.dataset_name ?? null,
       config: data.config ?? null,
       dataset_info: data.dataset_info ?? null,
       email_sent: false,

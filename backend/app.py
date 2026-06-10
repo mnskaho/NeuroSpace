@@ -2543,6 +2543,21 @@ def dataset_name_from_sources(*sources):
     return UNKNOWN_DATASET_NAME
 
 
+def find_uploaded_dataset_path(file_id, dataset_name=None):
+    candidates = []
+
+    if dataset_name and dataset_name != UNKNOWN_DATASET_NAME:
+        candidates.append(UPLOAD_DIR / f"{file_id}_{clean_dataset_name(dataset_name)}")
+
+    candidates.extend(sorted(UPLOAD_DIR.glob(f"{file_id}_*.csv")))
+
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+
+    return None
+
+
 def ensure_dataset_name_in_results(results, dataset_name):
     if not isinstance(results, dict):
         return results
@@ -2794,7 +2809,7 @@ async def get_next_job():
         url = supabase_rest_url(SUPABASE_TABLE)
 
         debug_params = {
-            "select": "file_id,user_email,status,created_at,started_at,completed_at",
+            "select": "file_id,user_email,status,dataset_name,created_at,started_at,completed_at",
             "order": "created_at.desc",
             "limit": "10",
         }
@@ -2863,6 +2878,10 @@ async def get_next_job():
         raw_config = job.get("config")
         normalized_config = normalize_training_config(raw_config)
         manual_overrides = normalized_config["manual_overrides"]
+        dataset_name = dataset_name_from_sources(job, job.get("dataset_info") or {})
+        dataset_info = job.get("dataset_info") or {}
+        if isinstance(dataset_info, dict):
+            dataset_info["dataset_name"] = dataset_name
 
         print(
             "Raw config from Supabase:",
@@ -2887,6 +2906,7 @@ async def get_next_job():
             json={
                 "status": "processing",
                 "config": normalized_config,
+                "dataset_info": dataset_info,
                 "started_at": now_iso(),
                 "updated_at": now_iso(),
             },
@@ -2917,7 +2937,8 @@ async def get_next_job():
             "file_id": file_id,
             "job_id": file_id,
             "config": normalized_config,
-            "dataset_info": job.get("dataset_info") or {},
+            "dataset_name": dataset_name,
+            "dataset_info": dataset_info,
         }
 
     except HTTPException:
@@ -2946,18 +2967,20 @@ async def download_dataset(file_id: str):
                 detail="Job non trouvé dans Supabase",
             )
 
+        dataset_name = dataset_name_from_sources(job, job.get("dataset_info") or {})
         file_path = job.get("file_path")
 
         if not file_path:
-            matches = list(UPLOAD_DIR.glob(f"{file_id}_*.csv"))
-            if matches:
-                file_path = str(matches[0])
+            matched_path = find_uploaded_dataset_path(file_id, dataset_name)
+            if matched_path:
+                file_path = str(matched_path)
 
         if not file_path:
             raise HTTPException(
                 status_code=404,
                 detail=(
-                    "file_path manquant dans training_jobs et fichier introuvable dans uploads."
+                    "Dataset introuvable sur ce backend. Vérifie que le frontend upload "
+                    "vers le même backend que Colab, puis relance l'upload."
                 ),
             )
 
@@ -2969,7 +2992,7 @@ async def download_dataset(file_id: str):
                 detail=f"Fichier dataset introuvable: {path}",
             )
 
-        filename = job.get("filename") or path.name
+        filename = dataset_name if dataset_name != UNKNOWN_DATASET_NAME else path.name
 
         return FileResponse(
             path,
