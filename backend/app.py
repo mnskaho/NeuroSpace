@@ -4014,6 +4014,7 @@ import traceback
 from pathlib import Path
 from datetime import datetime, timezone
 from email.message import EmailMessage
+from email.utils import parseaddr
 
 import requests
 import pandas as pd
@@ -4139,32 +4140,65 @@ def supabase_select_one_by_file_id(file_id: str):
     return rows[0]
 
 
-def supabase_update_by_file_id(file_id: str, data: dict):
+def is_missing_column_error(response_text: str, column_name: str):
+    lower_text = str(response_text).lower()
+    lower_column = column_name.lower()
+    return (
+        lower_column in lower_text
+        and (
+            "could not find" in lower_text
+            or "column" in lower_text
+            or "schema cache" in lower_text
+        )
+    )
+
+
+def supabase_update_by_file_id(file_id: str, data: dict, optional_columns: set[str] | None = None):
     url = supabase_rest_url(SUPABASE_TABLE)
 
     params = {
         "file_id": f"eq.{file_id}",
     }
 
+    optional_columns = optional_columns or set()
     payload = {
         **data,
         "updated_at": now_iso(),
     }
 
-    response = requests.patch(
-        url,
-        headers=supabase_headers(prefer="return=representation"),
-        params=params,
-        json=payload,
-        timeout=30,
-    )
+    while True:
+        response = requests.patch(
+            url,
+            headers=supabase_headers(prefer="return=representation"),
+            params=params,
+            json=payload,
+            timeout=30,
+        )
 
-    if response.status_code >= 400:
+        if response.status_code < 400:
+            return response.json()
+
+        missing_optional = {
+            column
+            for column in optional_columns
+            if column in payload and is_missing_column_error(response.text, column)
+        }
+        if missing_optional:
+            payload = {
+                key: value
+                for key, value in payload.items()
+                if key not in missing_optional
+            }
+            print(
+                "⚠️ Supabase update retry without optional columns:",
+                sorted(missing_optional),
+                flush=True,
+            )
+            continue
+
         raise RuntimeError(
             f"Supabase update error: {response.status_code} - {response.text}"
         )
-
-    return response.json()
 
 
 
@@ -4671,6 +4705,25 @@ def dataset_name_from_sources(*sources):
     return UNKNOWN_DATASET_NAME
 
 
+def dataset_name_from_job_context(body=None, dataset_info=None, existing_job=None, file_path=None, results=None):
+    body = body if isinstance(body, dict) else {}
+    dataset_info = dataset_info if isinstance(dataset_info, dict) else {}
+    existing_job = existing_job if isinstance(existing_job, dict) else {}
+    results = results if isinstance(results, dict) else {}
+    existing_dataset_info = existing_job.get("dataset_info") if isinstance(existing_job.get("dataset_info"), dict) else {}
+
+    return dataset_name_from_sources(
+        body.get("dataset_name"),
+        body.get("filename"),
+        dataset_info.get("dataset_name"),
+        results.get("dataset_name"),
+        existing_job.get("dataset_name"),
+        existing_job.get("filename"),
+        existing_dataset_info.get("dataset_name"),
+        infer_dataset_name_from_path(file_path or existing_job.get("file_path")),
+    )
+
+
 def find_uploaded_dataset_path(file_id, dataset_name=None):
     candidates = []
 
@@ -4825,28 +4878,30 @@ async def start_training(file_id: str, request: Request):
         config = normalize_training_config(raw_config)
         dataset_info = body.get("dataset_info") or coerce_json_object(raw_config).get("dataset_info") or {}
 
-        dataset_name = dataset_name_from_sources(body.get("dataset_name"), dataset_info, body.get("filename"))
-        filename = dataset_name if dataset_name != UNKNOWN_DATASET_NAME else body.get("filename")
         file_path = body.get("file_path")
+        existing_job = supabase_select_one_by_file_id(file_id)
 
         if not file_path:
-            matches = list(UPLOAD_DIR.glob(f"{file_id}_*.csv"))
-            if matches:
-                file_path = str(matches[0])
-                inferred_name = infer_dataset_name_from_path(matches[0])
-                filename = filename or inferred_name
-                dataset_name = dataset_name_from_sources(dataset_name, inferred_name)
+            matched_path = find_uploaded_dataset_path(file_id, dataset_name_from_sources(body, dataset_info, existing_job or {}))
+            if matched_path:
+                file_path = str(matched_path)
 
-        existing_job = supabase_select_one_by_file_id(file_id)
+        dataset_name = dataset_name_from_job_context(
+            body=body,
+            dataset_info=dataset_info,
+            existing_job=existing_job,
+            file_path=file_path,
+        )
+        filename = dataset_name if dataset_name != UNKNOWN_DATASET_NAME else body.get("filename")
 
         if existing_job:
             file_path = file_path or existing_job.get("file_path")
-            filename = filename or existing_job.get("filename")
-            dataset_name = dataset_name_from_sources(
-                dataset_name,
-                existing_job.get("dataset_info") or {},
-                existing_job.get("filename"),
-                infer_dataset_name_from_path(file_path),
+            filename = filename or existing_job.get("filename") or dataset_name
+            dataset_name = dataset_name_from_job_context(
+                body=body,
+                dataset_info=dataset_info,
+                existing_job=existing_job,
+                file_path=file_path,
             )
 
         if not file_path:
@@ -4876,6 +4931,7 @@ async def start_training(file_id: str, request: Request):
             "status": "queued",
             "config": config,
             "dataset_info": dataset_info,
+            "dataset_name": dataset_name,
             "file_path": file_path,
             "filename": filename,
             "started_at": None,
@@ -4883,7 +4939,11 @@ async def start_training(file_id: str, request: Request):
             "error_message": None,
         }
 
-        supabase_update_by_file_id(file_id, update_payload)
+        supabase_update_by_file_id(
+            file_id,
+            update_payload,
+            optional_columns={"filename", "file_path"},
+        )
 
         print(f"✅ Supabase job queued: {file_id}")
         print(f"   raw_config: {raw_config}")
@@ -5034,6 +5094,7 @@ async def get_next_job():
             json={
                 "status": "processing",
                 "config": normalized_config,
+                "dataset_name": dataset_name,
                 "dataset_info": dataset_info,
                 "started_at": now_iso(),
                 "updated_at": now_iso(),
@@ -5663,9 +5724,27 @@ def send_report_email(
         }
 
     if not EMAIL_FROM or not BREVO_SMTP_USER or not BREVO_SMTP_PASSWORD:
+        print(
+            "⚠️ Brevo SMTP env missing:",
+            {
+                "host": BREVO_SMTP_HOST,
+                "port": BREVO_SMTP_PORT,
+                "email_from_exists": bool(EMAIL_FROM),
+                "smtp_user_exists": bool(BREVO_SMTP_USER),
+                "smtp_password_exists": bool(BREVO_SMTP_PASSWORD),
+            },
+            flush=True,
+        )
         return {
             "success": False,
             "error": "Brevo SMTP env missing. Email skipped.",
+        }
+
+    _, sender_email = parseaddr(EMAIL_FROM)
+    if not sender_email or "@" not in sender_email:
+        return {
+            "success": False,
+            "error": f"EMAIL_FROM invalide pour Brevo: {EMAIL_FROM}",
         }
 
     if not pdf_path.exists():
@@ -5677,6 +5756,7 @@ def send_report_email(
     try:
         subject = "Your NeuroSpace Training Report is Ready"
         created_at = results.get("timestamp") or now_iso()
+        dataset_name = results.get("dataset_name") or UNKNOWN_DATASET_NAME
 
         body = f"""Hello {to_name or "User"},
 
@@ -5685,6 +5765,7 @@ Your training and classification process has been completed successfully.
 The generated PDF report is now ready and contains the full classification results.
 
 Summary:
+- Dataset: {dataset_name}
 - Generated at: {created_at}
 
 Thank you for using NeuroSpace.
@@ -5715,6 +5796,20 @@ NeuroSpace Team
                     subtype="json",
                     filename=f"results-{file_id}.json",
                 )
+
+        print(
+            "📧 Brevo SMTP sending",
+            {
+                "host": BREVO_SMTP_HOST,
+                "port": BREVO_SMTP_PORT,
+                "from": EMAIL_FROM,
+                "sender_email": sender_email,
+                "to": to_email,
+                "pdf_path": str(pdf_path),
+                "json_path": str(json_path) if json_path else None,
+            },
+            flush=True,
+        )
 
         with smtplib.SMTP(BREVO_SMTP_HOST, BREVO_SMTP_PORT, timeout=15) as smtp:
             smtp.starttls()
@@ -5761,14 +5856,13 @@ async def complete_job(file_id: str, request: Request):
 
         user_email = job.get("user_email")
         user_name = job.get("user_name")
-        dataset_name = dataset_name_from_sources(
-            results,
-            job.get("dataset_info") or {},
-            job.get("filename"),
-            infer_dataset_name_from_path(job.get("file_path")),
+        dataset_name = dataset_name_from_job_context(
+            existing_job=job,
+            results=results,
+            file_path=job.get("file_path"),
         )
         results["job_id"] = file_id
-        results["status"] = results.get("status") or "completed"
+        results["status"] = "completed"
         ensure_dataset_name_in_results(results, dataset_name)
 
         if not user_email:
@@ -5802,6 +5896,7 @@ async def complete_job(file_id: str, request: Request):
             file_id,
             {
                 "status": "completed",
+                "dataset_name": dataset_name,
                 "results": results,
                 "json_path": json_storage_key,
                 "pdf_path": pdf_storage_key,
@@ -5820,15 +5915,22 @@ async def complete_job(file_id: str, request: Request):
             results=results,
         )
 
-        supabase_update_by_file_id(
-            file_id,
-            {
-                "email_sent": bool(email_result.get("success")),
-                "email_sent_to": user_email,
-                "email_sent_at": now_iso() if email_result.get("success") else None,
-                "email_error": None if email_result.get("success") else email_result.get("error"),
-            },
-        )
+        try:
+            supabase_update_by_file_id(
+                file_id,
+                {
+                    "status": "completed",
+                    "email_sent": bool(email_result.get("success")),
+                    "email_sent_to": user_email,
+                    "email_sent_at": now_iso() if email_result.get("success") else None,
+                    "email_error": None if email_result.get("success") else email_result.get("error"),
+                },
+            )
+        except Exception as email_update_error:
+            print(
+                f"⚠️ Could not persist Brevo email status for completed job {file_id}: {email_update_error}",
+                flush=True,
+            )
 
         if email_result.get("success"):
             print("✅ Brevo email sent successfully")
@@ -5936,11 +6038,10 @@ async def get_job_status(file_id: str):
         if not job:
             raise HTTPException(status_code=404, detail="Job non trouvé")
 
-        dataset_name = dataset_name_from_sources(
-            job.get("results") if isinstance(job.get("results"), dict) else {},
-            job.get("dataset_info") or {},
-            job.get("filename"),
-            infer_dataset_name_from_path(job.get("file_path")),
+        dataset_name = dataset_name_from_job_context(
+            existing_job=job,
+            results=job.get("results") if isinstance(job.get("results"), dict) else {},
+            file_path=job.get("file_path"),
         )
 
         return {
@@ -5981,11 +6082,10 @@ async def get_results(file_id: str):
             )
 
         results = job.get("results")
-        dataset_name = dataset_name_from_sources(
-            results if isinstance(results, dict) else {},
-            job.get("dataset_info") or {},
-            job.get("filename"),
-            infer_dataset_name_from_path(job.get("file_path")),
+        dataset_name = dataset_name_from_job_context(
+            existing_job=job,
+            results=results if isinstance(results, dict) else {},
+            file_path=job.get("file_path"),
         )
 
         if results:
@@ -6085,7 +6185,7 @@ async def debug_jobs():
         url = supabase_rest_url(SUPABASE_TABLE)
 
         params = {
-            "select": "file_id,user_email,status,created_at,started_at,completed_at,file_path,filename,dataset_info",
+            "select": "file_id,user_email,status,dataset_name,created_at,started_at,completed_at,dataset_info,email_sent,email_sent_to,email_sent_at,email_error,json_path,pdf_path",
             "order": "created_at.desc",
             "limit": "10",
         }
