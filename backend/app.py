@@ -4008,12 +4008,11 @@ import os
 import json
 import uuid
 import shutil
-import smtplib
+import base64
 import sys
 import traceback
 from pathlib import Path
 from datetime import datetime, timezone
-from email.message import EmailMessage
 from email.utils import parseaddr
 
 import requests
@@ -4067,10 +4066,7 @@ SUPABASE_TABLE = "training_jobs"
 SUPABASE_REPORTS_BUCKET = os.getenv("SUPABASE_REPORTS_BUCKET", "reports")
 UNKNOWN_DATASET_NAME = "Unknown Dataset"
 
-BREVO_SMTP_HOST = os.getenv("BREVO_SMTP_HOST", "smtp-relay.brevo.com")
-BREVO_SMTP_PORT = int(os.getenv("BREVO_SMTP_PORT", "587"))
-BREVO_SMTP_USER = os.getenv("BREVO_SMTP_USER")
-BREVO_SMTP_PASSWORD = os.getenv("BREVO_SMTP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 APP_URL = os.getenv("NEXT_PUBLIC_APP_URL") or os.getenv("APP_URL") or "http://localhost:3000"
 
@@ -5723,24 +5719,22 @@ def send_report_email(
             "error": "Recipient email missing",
         }
 
-    if not EMAIL_FROM or not BREVO_SMTP_USER or not BREVO_SMTP_PASSWORD:
+    if not EMAIL_FROM or not BREVO_API_KEY:
         print(
-            "⚠️ Brevo SMTP env missing:",
+            "⚠️ Brevo API env missing:",
             {
-                "host": BREVO_SMTP_HOST,
-                "port": BREVO_SMTP_PORT,
                 "email_from_exists": bool(EMAIL_FROM),
-                "smtp_user_exists": bool(BREVO_SMTP_USER),
-                "smtp_password_exists": bool(BREVO_SMTP_PASSWORD),
+                "brevo_api_key_exists": bool(BREVO_API_KEY),
             },
             flush=True,
         )
         return {
             "success": False,
-            "error": "Brevo SMTP env missing. Email skipped.",
+            "error": "Brevo API env missing. Email skipped.",
         }
 
-    _, sender_email = parseaddr(EMAIL_FROM)
+    sender_name, sender_email = parseaddr(EMAIL_FROM)
+    sender_name = sender_name or "NeuroSpace"
     if not sender_email or "@" not in sender_email:
         return {
             "success": False,
@@ -5757,66 +5751,88 @@ def send_report_email(
         subject = "Your NeuroSpace Training Report is Ready"
         created_at = results.get("timestamp") or now_iso()
         dataset_name = results.get("dataset_name") or UNKNOWN_DATASET_NAME
+        recipient_name = to_name or "User"
 
-        body = f"""Hello {to_name or "User"},
-
-Your training and classification process has been completed successfully.
-
-The generated PDF report is now ready and contains the full classification results.
-
-Summary:
-- Dataset: {dataset_name}
-- Generated at: {created_at}
-
-Thank you for using NeuroSpace.
-
-Best regards,
-NeuroSpace Team
+        html_content = f"""
+<html>
+  <body>
+    <p>Hello {recipient_name},</p>
+    <p>Your training and classification process has been completed successfully.</p>
+    <p>The generated PDF report is now ready and contains the full classification results.</p>
+    <p><strong>Summary:</strong></p>
+    <ul>
+      <li><strong>Dataset:</strong> {dataset_name}</li>
+      <li><strong>Generated at:</strong> {created_at}</li>
+    </ul>
+    <p>Thank you for using NeuroSpace.</p>
+    <p>Best regards,<br/>NeuroSpace Team</p>
+  </body>
+</html>
 """
 
-        msg = EmailMessage()
-        msg["From"] = EMAIL_FROM
-        msg["To"] = to_email
-        msg["Subject"] = subject
-        msg.set_content(body)
+        attachments = []
 
         with open(pdf_path, "rb") as f:
-            msg.add_attachment(
-                f.read(),
-                maintype="application",
-                subtype="pdf",
-                filename=f"neurospace-report-{file_id}.pdf",
+            attachments.append(
+                {
+                    "content": base64.b64encode(f.read()).decode("ascii"),
+                    "name": f"neurospace-report-{file_id}.pdf",
+                }
             )
 
         if json_path and json_path.exists():
             with open(json_path, "rb") as f:
-                msg.add_attachment(
-                    f.read(),
-                    maintype="application",
-                    subtype="json",
-                    filename=f"results-{file_id}.json",
+                attachments.append(
+                    {
+                        "content": base64.b64encode(f.read()).decode("ascii"),
+                        "name": f"results-{file_id}.json",
+                    }
                 )
 
+        payload = {
+            "sender": {"name": sender_name, "email": sender_email},
+            "to": [{"email": to_email, "name": recipient_name}],
+            "subject": subject,
+            "htmlContent": html_content,
+            "attachment": attachments,
+        }
+
+        headers = {
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
         print(
-            "📧 Brevo SMTP sending",
+            "📧 Brevo API sending",
             {
-                "host": BREVO_SMTP_HOST,
-                "port": BREVO_SMTP_PORT,
-                "from": EMAIL_FROM,
+                "url": "https://api.brevo.com/v3/smtp/email",
+                "from_name": sender_name,
                 "sender_email": sender_email,
                 "to": to_email,
                 "pdf_path": str(pdf_path),
                 "json_path": str(json_path) if json_path else None,
+                "attachment_count": len(attachments),
             },
             flush=True,
         )
 
-        with smtplib.SMTP(BREVO_SMTP_HOST, BREVO_SMTP_PORT, timeout=15) as smtp:
-            smtp.starttls()
-            smtp.login(BREVO_SMTP_USER, BREVO_SMTP_PASSWORD)
-            smtp.send_message(msg)
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers=headers,
+            json=payload,
+            timeout=30,
+        )
 
-        print(f"📧 Email sent to {to_email}")
+        if response.status_code >= 400:
+            error = f"Brevo API error: {response.status_code} - {response.text}"
+            print(f"❌ {error}", flush=True)
+            return {
+                "success": False,
+                "error": error,
+            }
+
+        print(f"📧 Brevo API email sent to {to_email}: {response.text[:500]}", flush=True)
 
         return {
             "success": True,
@@ -6229,8 +6245,7 @@ if __name__ == "__main__":
     print("ENV_PATH exists:", ENV_PATH.exists())
     print("SUPABASE_URL exists:", bool(SUPABASE_URL))
     print("SUPABASE_SERVICE_ROLE_KEY exists:", bool(SUPABASE_SERVICE_ROLE_KEY))
-    print("BREVO_SMTP_USER exists:", bool(BREVO_SMTP_USER))
-    print("BREVO_SMTP_PASSWORD exists:", bool(BREVO_SMTP_PASSWORD))
+    print("BREVO_API_KEY exists:", bool(BREVO_API_KEY))
     print("EMAIL_FROM exists:", bool(EMAIL_FROM))
     print("UPLOAD_DIR:", UPLOAD_DIR)
     print("RESULTS_DIR:", RESULTS_DIR)
