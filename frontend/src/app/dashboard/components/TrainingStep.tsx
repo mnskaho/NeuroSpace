@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
 import {
+  cancelTraining,
   getJobStatus,
   getResults,
   startTraining as startBackendTraining,
@@ -47,6 +48,7 @@ export default function TrainingStep({
   const [status, setStatus] = useState('Ready to start training.');
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [canceling, setCanceling] = useState(false);
   const pollRef = useRef<number | null>(null);
   const slowResultsTimerRef = useRef<number | null>(null);
   const slowResultsToastShownRef = useRef(false);
@@ -150,6 +152,8 @@ export default function TrainingStep({
 
   const startTraining = async () => {
     setError(null);
+    setJobId(null);
+    setProgress(0);
     clearPolling();
     clearSlowResultsTimer();
     slowResultsToastShownRef.current = false;
@@ -288,6 +292,16 @@ export default function TrainingStep({
             }
           }
 
+          if (job.status === 'cancelled') {
+            clearPolling();
+            clearSlowResultsTimer();
+            setRunning(false);
+            setCanceling(false);
+            setProgress(0);
+            setError(null);
+            setStatus('Training canceled.');
+          }
+
           if (job.status === 'failed') {
             clearPolling();
             clearSlowResultsTimer();
@@ -315,6 +329,41 @@ export default function TrainingStep({
       setRunning(false);
       setError(err instanceof Error ? err.message : 'Training failed.');
       setStatus('Training error.');
+    }
+  };
+
+  const handleCancelTraining = async () => {
+    if (!jobId || canceling) return;
+
+    const confirmed = window.confirm('Are you sure you want to cancel this training?');
+    if (!confirmed) return;
+
+    try {
+      setCanceling(true);
+      setError(null);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
+      await cancelTraining(jobId, session.access_token);
+
+      clearPolling();
+      clearSlowResultsTimer();
+      setRunning(false);
+      setProgress(0);
+      setStatus('Training canceled.');
+      toast.success('Training canceled.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to cancel training.';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setCanceling(false);
     }
   };
 
@@ -383,13 +432,25 @@ export default function TrainingStep({
         </div>
       </div>
 
-      <button
-        onClick={startTraining}
-        disabled={running}
-        className="btn-quantum px-8 py-4 rounded-xl font-mono text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {running ? 'Training...' : 'Start Training'}
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          onClick={startTraining}
+          disabled={running}
+          className="btn-quantum px-8 py-4 rounded-xl font-mono text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {running ? 'Training...' : 'Start Training'}
+        </button>
+
+        {running && jobId && (
+          <button
+            onClick={handleCancelTraining}
+            disabled={canceling}
+            className="rounded-xl border border-red-500/40 bg-red-500/10 px-8 py-4 font-mono text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {canceling ? 'Canceling...' : 'Cancel Training'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

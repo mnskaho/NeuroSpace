@@ -67,7 +67,7 @@ export interface StartTrainingResponse {
 export interface JobStatusResponse {
   job_id: string;
   dataset_name?: string;
-  status: 'uploaded' | 'queued' | 'processing' | 'running' | 'completed' | 'failed';
+  status: 'uploaded' | 'queued' | 'processing' | 'running' | 'completed' | 'failed' | 'cancelled';
   progress?: number;
   message?: string;
   error?: string;
@@ -94,6 +94,16 @@ export function startTraining(fileId: string, payload: Record<string, unknown>, 
 
 export function getJobStatus(jobId: string) {
   return appFetch<JobStatusResponse>(`/api/job/${jobId}/status`);
+}
+
+export function cancelTraining(jobId: string, accessToken?: string) {
+  return appFetch<{ success: boolean; job_id: string; status: 'cancelled'; message: string }>(
+    `/api/job/${jobId}/cancel`,
+    {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    }
+  );
 }
 
 export function getResults<T>(jobId: string) {
