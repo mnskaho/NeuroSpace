@@ -49,6 +49,7 @@ export default function TrainingStep({
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [canceling, setCanceling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollRef = useRef<number | null>(null);
   const slowResultsTimerRef = useRef<number | null>(null);
   const slowResultsToastShownRef = useRef(false);
@@ -154,6 +155,7 @@ export default function TrainingStep({
     setError(null);
     setJobId(null);
     setProgress(0);
+    setShowCancelConfirm(false);
     clearPolling();
     clearSlowResultsTimer();
     slowResultsToastShownRef.current = false;
@@ -297,6 +299,7 @@ export default function TrainingStep({
             clearSlowResultsTimer();
             setRunning(false);
             setCanceling(false);
+            setShowCancelConfirm(false);
             setProgress(0);
             setError(null);
             setStatus('Training canceled.');
@@ -335,12 +338,10 @@ export default function TrainingStep({
   const handleCancelTraining = async () => {
     if (!jobId || canceling) return;
 
-    const confirmed = window.confirm('Are you sure you want to cancel this training?');
-    if (!confirmed) return;
-
     try {
       setCanceling(true);
       setError(null);
+      setShowCancelConfirm(false);
 
       const {
         data: { session },
@@ -368,6 +369,7 @@ export default function TrainingStep({
   };
 
   return (
+    <>
     <div className="max-w-5xl">
       <div className="mb-8">
         <h2 className="font-mono font-black text-2xl text-text-primary mb-2">Model Training</h2>
@@ -443,7 +445,7 @@ export default function TrainingStep({
 
         {running && jobId && (
           <button
-            onClick={handleCancelTraining}
+            onClick={() => setShowCancelConfirm(true)}
             disabled={canceling}
             className="rounded-xl border border-red-500/40 bg-red-500/10 px-8 py-4 font-mono text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -452,5 +454,54 @@ export default function TrainingStep({
         )}
       </div>
     </div>
+
+    {showCancelConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl border border-red-500/25 bg-[#0F1424] p-6 shadow-2xl shadow-red-950/30">
+          <div className="mb-5 flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-400/30 bg-red-500/15 text-red-300">
+              <span className="font-mono text-lg font-black">!</span>
+            </div>
+            <div>
+              <h3 className="font-mono text-lg font-black text-text-primary">
+                Cancel training?
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                This will stop polling and mark the current job as canceled. No results or report will be generated for this run.
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-5 rounded-xl border border-quantum-purple/15 bg-white/5 p-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+              Current Job
+            </div>
+            <div className="mt-1 break-all font-mono text-xs text-text-secondary">
+              {jobId}
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(false)}
+              disabled={canceling}
+              className="rounded-xl border border-quantum-purple/20 bg-white/5 px-5 py-3 font-mono text-xs font-semibold text-text-secondary transition-colors hover:bg-white/10 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Keep Training
+            </button>
+            <button
+              type="button"
+              onClick={handleCancelTraining}
+              disabled={canceling}
+              className="rounded-xl border border-red-400/40 bg-red-500/20 px-5 py-3 font-mono text-xs font-semibold text-red-200 transition-colors hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {canceling ? 'Canceling...' : 'Cancel Training'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
