@@ -36,6 +36,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ fil
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
+    if (job.status === 'cancelled') {
+      return NextResponse.json({
+        success: true,
+        fileId,
+        status: 'cancelled',
+        message: 'Job already cancelled, complete callback ignored',
+      });
+    }
+
     const datasetName = getDatasetName(job, results);
     const completedResults: TrainingResults = {
       ...results,

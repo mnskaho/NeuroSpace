@@ -5863,6 +5863,15 @@ async def complete_job(file_id: str, request: Request):
                 detail="Job non trouvé dans Supabase",
             )
 
+        if job.get("status") == "cancelled":
+            print(f"⚠️ Ignoring complete callback because job is cancelled: {file_id}")
+            return {
+                "success": True,
+                "file_id": file_id,
+                "status": "cancelled",
+                "message": "Job already cancelled, complete callback ignored",
+            }
+
         user_email = job.get("user_email")
         user_name = job.get("user_name")
         dataset_name = dataset_name_from_job_context(
@@ -6007,6 +6016,15 @@ async def mark_job_failed(file_id: str, payload: dict):
             "file_id": file_id,
         }
 
+    if job.get("status") == "cancelled":
+        print(f"⚠️ Ignoring failed callback because job is already cancelled: {file_id}")
+        return {
+            "success": True,
+            "message": "Job already cancelled, failed callback ignored",
+            "file_id": file_id,
+            "status": "cancelled",
+        }
+
     supabase_update_by_file_id(
         file_id,
         {
@@ -6033,6 +6051,50 @@ async def failed_job(file_id: str, request: Request):
 async def fail_job(file_id: str, request: Request):
     payload = await request.json()
     return await mark_job_failed(file_id, payload)
+
+
+@app.post("/api/job/{file_id}/cancel")
+async def cancel_job(file_id: str):
+    try:
+        job = supabase_select_one_by_file_id(file_id)
+
+        if not job:
+            raise HTTPException(
+                status_code=404,
+                detail="Job non trouvé dans Supabase",
+            )
+
+        status = job.get("status")
+        if status not in {"queued", "processing"}:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot cancel job with status: {status}",
+            )
+
+        supabase_update_by_file_id(
+            file_id,
+            {
+                "status": "cancelled",
+                "error_message": None,
+                "completed_at": None,
+            },
+        )
+
+        return {
+            "success": True,
+            "file_id": file_id,
+            "job_id": file_id,
+            "status": "cancelled",
+            "message": "Training canceled.",
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        print("❌ cancel_job error:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ============================================================

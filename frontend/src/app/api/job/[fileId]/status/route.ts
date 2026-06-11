@@ -27,7 +27,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ fileId:
     job_id: job.file_id,
     dataset_name: getDatasetName(job),
     status: job.status,
-    progress: job.status === 'completed' ? 100 : job.status === 'processing' ? 50 : 20,
+    progress:
+      job.status === 'completed' ? 100 : job.status === 'cancelled' ? 0 : job.status === 'processing' ? 50 : 20,
     message: job.status,
     error: job.error_message || job.email_error,
   });
