@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
     const prices: Record<string, number> = {
       Pro: 150,
-      "Pro+": 500,
+      "Pro+": 450,
     };
 
     const amount = prices[plan];

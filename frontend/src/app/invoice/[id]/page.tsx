@@ -131,7 +131,7 @@ export default function InvoicePage({ params }: Props) {
         ? "NeuroSpace Free Plan"
         : payment.amount === 150
         ? "NeuroSpace Pro Plan"
-        : payment.amount === 500
+        : payment.amount === 450 || payment.amount === 500
         ? "NeuroSpace Pro+ Plan"
         : "NeuroSpace Premium"}
     </td>

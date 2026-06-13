@@ -1548,7 +1548,7 @@ const plans: Array<{
 }> = [
   { plan: "Free", price: 0, priceLabel: "0€", trainingLabel: "1 Training" },
   { plan: "Pro", price: 150, priceLabel: "150€ / month", trainingLabel: "5 Trainings" },
-  { plan: "Pro+", price: 500, priceLabel: "500€ / month", trainingLabel: "25 Trainings" },
+  { plan: "Pro+", price: 450, priceLabel: "450€ / month", trainingLabel: "25 Trainings" },
 ];
 
 const supabase = createClient(

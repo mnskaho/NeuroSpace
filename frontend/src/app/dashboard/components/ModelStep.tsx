@@ -401,7 +401,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
   const selectedModels = useMemo(() => {
     const list: string[] = [];
     if (modelConfig.selectedRNN) list.push('Classical RNN / MLP');
-    if (modelConfig.selectedQRNN) list.push('Quantum QRNN');
+    if (modelConfig.selectedQRNN) list.push('Quantum QNN');
     return list.join(' + ') || 'No model selected';
   }, [modelConfig]);
 
@@ -416,7 +416,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
           Model Configuration
         </h2>
         <p className="font-sans text-text-secondary text-sm">
-          Configure the backend payload for classical RNN and quantum QRNN.
+          Configure the backend payload for classical RNN and quantum QNN.
         </p>
       </div>
 
@@ -486,7 +486,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
             </div>
             <div>
               <div className="font-mono font-bold text-sm text-text-primary">
-                Quantum QRNN
+                Quantum QNN
               </div>
               <div className="font-mono text-[10px] text-text-muted">
                 MI + Thumb Rule feature sizing
@@ -504,7 +504,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
             }`}
           >
             <div className="font-mono text-sm font-semibold text-text-primary">
-              Enable quantum QRNN
+              Enable quantum QNN
             </div>
           </button>
         </div>
@@ -526,8 +526,8 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
-              ['pca', 'PCA Mode', 'RNN -> PCA | QRNN -> MI + Thumb Rule'],
-              ['mi', 'MI Mode', 'RNN -> MI | QRNN -> MI + Thumb Rule'],
+              ['pca', 'PCA Mode', 'RNN -> PCA | QNN -> MI + Thumb Rule'],
+              ['mi', 'MI Mode', 'RNN -> MI | QNN -> MI + Thumb Rule'],
             ].map(([value, title, description]) => (
               <button
                 key={value}
@@ -672,7 +672,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
           {modelConfig.selectedQRNN && (
           <div>
             <label className="font-mono text-xs text-text-muted uppercase tracking-wider mb-2 block">
-              QRNN Epochs
+              QNN Epochs
             </label>
             <input
               type="number"
@@ -707,7 +707,7 @@ export default function ModelStep({ modelConfig, onConfigChange, onComplete }: M
           {modelConfig.selectedQRNN && (
           <div>
             <label className="font-mono text-xs text-text-muted uppercase tracking-wider mb-2 block">
-              QRNN Batch Size
+              QNN Batch Size
             </label>
             <select
               value={modelConfig.qrnnBatchSize}
