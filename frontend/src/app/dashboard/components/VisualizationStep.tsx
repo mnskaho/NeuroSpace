@@ -40,7 +40,7 @@ interface LearningCurveSeries {
 }
 
 const LEARNING_CURVE_STYLES: Record<LearningCurveKey, { label: string; color: string }> = {
-  rnn: { label: 'Classical RNN / MLP', color: '#A78BFA' },
+  rnn: { label: 'Classical RNN', color: '#A78BFA' },
   qrnn: { label: 'QNN', color: '#06B6D4' },
   qrnn_noisy: { label: 'QNN Noisy', color: '#14B8A6' },
   qrnn_mitigated: { label: 'QNN Mitigated', color: '#F97316' },
@@ -133,14 +133,16 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
   );
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [completedResults, setCompletedResults] = useState<TrainingResults | null>(null);
 
-  const learningCurves = useMemo(() => normalizeLearningCurves(trainingResults), [trainingResults]);
+  const chartResults = completedResults ?? trainingResults;
+  const learningCurves = useMemo(() => normalizeLearningCurves(chartResults), [chartResults]);
   const accuracySeries = learningCurves.series.filter((series) => hasMetricData(series, 'accuracy'));
   const lossSeries = learningCurves.series.filter((series) => hasMetricData(series, 'loss'));
 
   const hasCurves = learningCurves.data.length > 0 && (accuracySeries.length > 0 || lossSeries.length > 0);
   const jobId = trainingResults.job_id;
-  const datasetName = trainingResults.dataset_name || 'Unknown Dataset';
+  const datasetName = chartResults.dataset_name || 'Unknown Dataset';
 
   const tabs = [
     { id: 'curves', label: 'Learning Curves' },
@@ -160,6 +162,34 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!jobId) {
+      setCompletedResults(null);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    fetch(`/api/results/${jobId}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((results: TrainingResults | null) => {
+        if (isMounted && results) {
+          setCompletedResults(results);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCompletedResults(null);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobId]);
 
   const handleSubmitComment = async () => {
     if (!comment.trim() || !isSignedIn || commentLoading) return;
@@ -307,11 +337,11 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
               <button
                 onClick={() =>
                   exportResultsAsJson(
-                    addFormattedTrainingTimes(trainingResults),
+                    addFormattedTrainingTimes(chartResults),
                     `neurospace_${jobId || 'results'}.json`
                   )
                 }
-                disabled={!Object.keys(trainingResults).length}
+                disabled={!Object.keys(chartResults).length}
                 className="btn-quantum w-full py-3 rounded-xl font-mono text-sm font-semibold disabled:opacity-60"
               >
                 Export JSON
