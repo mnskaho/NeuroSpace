@@ -17,64 +17,97 @@ import { submitUserComment } from '@/lib/comments';
 import { exportResultsAsJson } from '@/lib/exportResults';
 import { addFormattedTrainingTimes } from '@/lib/results/trainingTime';
 import { supabase } from '@/lib/supabase';
-import type { TrainingMetricBlock, TrainingResults } from '@/app/dashboard/components/types';
+import type {
+  LearningCurveHistory,
+  QrnnVariantResults,
+  TrainingMetricBlock,
+  TrainingResults,
+} from '@/app/dashboard/components/types';
 
 interface VisualizationStepProps {
   trainingResults: TrainingResults;
 }
 
-const getQrnnMain = (qrnn: TrainingResults['qrnn']): TrainingMetricBlock | null => {
-  if (!qrnn) return null;
-  const qrnnVariants = qrnn as {
-    clean?: TrainingMetricBlock;
-    noisy?: TrainingMetricBlock;
-    mitigated?: TrainingMetricBlock;
-  };
-  if (qrnnVariants.mitigated) return qrnnVariants.mitigated;
-  if (qrnnVariants.noisy) return qrnnVariants.noisy;
-  if (qrnnVariants.clean) return qrnnVariants.clean;
-  return qrnn as TrainingMetricBlock;
+type LearningMetric = 'accuracy' | 'loss';
+type LearningCurveKey = 'rnn' | 'qrnn' | 'qrnn_noisy' | 'qrnn_mitigated';
+type LearningDataPoint = { epoch: number } & Partial<Record<`${LearningCurveKey}_${LearningMetric}`, number | null>>;
+
+interface LearningCurveSeries {
+  key: LearningCurveKey;
+  label: string;
+  color: string;
+  history: LearningCurveHistory;
+}
+
+const LEARNING_CURVE_STYLES: Record<LearningCurveKey, { label: string; color: string }> = {
+  rnn: { label: 'Classical RNN / MLP', color: '#A78BFA' },
+  qrnn: { label: 'QNN', color: '#06B6D4' },
+  qrnn_noisy: { label: 'QNN Noisy', color: '#14B8A6' },
+  qrnn_mitigated: { label: 'QNN Mitigated', color: '#F97316' },
 };
 
-const getHistory = (result: TrainingMetricBlock | null | undefined) => result?.history ?? null;
+const hasHistory = (block: TrainingMetricBlock | null | undefined): block is TrainingMetricBlock & {
+  history: LearningCurveHistory;
+} => Boolean(block?.history);
 
-const buildLearningData = (trainingResults: TrainingResults) => {
-  const rnnHistory = getHistory(trainingResults.rnn);
-  const qrnnHistory = getHistory(getQrnnMain(trainingResults.qrnn));
+const hasQrnnVariants = (qrnn: TrainingResults['qrnn']): qrnn is QrnnVariantResults =>
+  Boolean(qrnn && ('clean' in qrnn || 'noisy' in qrnn || 'mitigated' in qrnn));
+
+const getMetricSeries = (history: LearningCurveHistory, metric: LearningMetric) =>
+  metric === 'accuracy'
+    ? history.val_acc ?? history.val_accuracy ?? history.accuracy ?? history.train_acc ?? history.train_accuracy
+    : history.val_loss ?? history.loss ?? history.train_loss;
+
+const buildSeries = (
+  key: LearningCurveKey,
+  block: TrainingMetricBlock | null | undefined
+): LearningCurveSeries | null => {
+  if (!hasHistory(block)) return null;
+  const style = LEARNING_CURVE_STYLES[key];
+  return {
+    key,
+    label: style.label,
+    color: style.color,
+    history: block.history,
+  };
+};
+
+const normalizeLearningCurves = (trainingResults: TrainingResults) => {
+  const series = [
+    buildSeries('rnn', trainingResults.rnn),
+    hasQrnnVariants(trainingResults.qrnn)
+      ? buildSeries('qrnn', trainingResults.qrnn.clean)
+      : buildSeries('qrnn', trainingResults.qrnn),
+    hasQrnnVariants(trainingResults.qrnn) ? buildSeries('qrnn_noisy', trainingResults.qrnn.noisy) : null,
+    hasQrnnVariants(trainingResults.qrnn)
+      ? buildSeries('qrnn_mitigated', trainingResults.qrnn.mitigated)
+      : null,
+  ].filter((item): item is LearningCurveSeries => Boolean(item));
 
   const epochs = Math.max(
-    rnnHistory?.train_acc?.length ?? rnnHistory?.accuracy?.length ?? 0,
-    rnnHistory?.val_acc?.length ?? 0,
-    rnnHistory?.train_loss?.length ?? rnnHistory?.loss?.length ?? 0,
-    qrnnHistory?.train_acc?.length ?? qrnnHistory?.accuracy?.length ?? 0,
-    qrnnHistory?.val_acc?.length ?? 0,
-    qrnnHistory?.train_loss?.length ?? qrnnHistory?.loss?.length ?? 0
+    0,
+    ...series.flatMap(({ history }) => [
+      getMetricSeries(history, 'accuracy')?.length ?? 0,
+      getMetricSeries(history, 'loss')?.length ?? 0,
+    ])
   );
 
-  return Array.from({ length: epochs }, (_, index) => ({
-    epoch: index + 1,
-    rnn_loss:
-      rnnHistory?.val_loss?.[index] ??
-      rnnHistory?.train_loss?.[index] ??
-      rnnHistory?.loss?.[index] ??
-      null,
-    qrnn_loss:
-      qrnnHistory?.val_loss?.[index] ??
-      qrnnHistory?.train_loss?.[index] ??
-      qrnnHistory?.loss?.[index] ??
-      null,
-    rnn_acc:
-      rnnHistory?.val_acc?.[index] ??
-      rnnHistory?.train_acc?.[index] ??
-      rnnHistory?.accuracy?.[index] ??
-      null,
-    qrnn_acc:
-      qrnnHistory?.val_acc?.[index] ??
-      qrnnHistory?.train_acc?.[index] ??
-      qrnnHistory?.accuracy?.[index] ??
-      null,
-  }));
+  const data: LearningDataPoint[] = Array.from({ length: epochs }, (_, index) => {
+    const point: LearningDataPoint = { epoch: index + 1 };
+
+    for (const item of series) {
+      point[`${item.key}_accuracy`] = getMetricSeries(item.history, 'accuracy')?.[index] ?? null;
+      point[`${item.key}_loss`] = getMetricSeries(item.history, 'loss')?.[index] ?? null;
+    }
+
+    return point;
+  });
+
+  return { data, series };
 };
+
+const hasMetricData = (series: LearningCurveSeries, metric: LearningMetric) =>
+  Boolean(getMetricSeries(series.history, metric)?.length);
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -101,13 +134,11 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const learningCurveData = useMemo(() => buildLearningData(trainingResults), [trainingResults]);
-  const rnnHistory = getHistory(trainingResults.rnn);
-  const qrnnHistory = getHistory(getQrnnMain(trainingResults.qrnn));
+  const learningCurves = useMemo(() => normalizeLearningCurves(trainingResults), [trainingResults]);
+  const accuracySeries = learningCurves.series.filter((series) => hasMetricData(series, 'accuracy'));
+  const lossSeries = learningCurves.series.filter((series) => hasMetricData(series, 'loss'));
 
-  const hasCurves = learningCurveData.length > 0;
-  const hasRnnCurves = Boolean(rnnHistory);
-  const hasQrnnCurves = Boolean(qrnnHistory);
+  const hasCurves = learningCurves.data.length > 0 && (accuracySeries.length > 0 || lossSeries.length > 0);
   const jobId = trainingResults.job_id;
   const datasetName = trainingResults.dataset_name || 'Unknown Dataset';
 
@@ -203,34 +234,25 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
                   Accuracy Curves
                 </h3>
                 <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={learningCurveData}>
+                  <AreaChart data={learningCurves.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                     <XAxis dataKey="epoch" stroke="#64748B" />
                     <YAxis domain={[0, 1]} stroke="#64748B" />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    {hasRnnCurves && (
+                    {accuracySeries.map((series) => (
                       <Area
+                        key={`${series.key}_accuracy`}
                         type="monotone"
-                        dataKey="rnn_acc"
-                        stroke="#A78BFA"
-                        fill="#A78BFA"
+                        dataKey={`${series.key}_accuracy`}
+                        stroke={series.color}
+                        fill={series.color}
                         fillOpacity={0.16}
                         strokeWidth={3}
-                        name="RNN Accuracy"
+                        connectNulls
+                        name={`${series.label} Accuracy`}
                       />
-                    )}
-                    {hasQrnnCurves && (
-                      <Area
-                        type="monotone"
-                        dataKey="qrnn_acc"
-                        stroke="#06B6D4"
-                        fill="#06B6D4"
-                        fillOpacity={0.16}
-                        strokeWidth={3}
-                        name="QNN Accuracy"
-                      />
-                    )}
+                    ))}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -238,34 +260,25 @@ export default function VisualizationStep({ trainingResults }: VisualizationStep
               <div className="glass rounded-2xl p-6 border border-quantum-purple/10">
                 <h3 className="font-mono font-bold text-sm text-text-primary mb-6">Loss Curves</h3>
                 <ResponsiveContainer width="100%" height={320}>
-                  <AreaChart data={learningCurveData}>
+                  <AreaChart data={learningCurves.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                     <XAxis dataKey="epoch" stroke="#64748B" />
                     <YAxis stroke="#64748B" />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    {hasRnnCurves && (
+                    {lossSeries.map((series) => (
                       <Area
+                        key={`${series.key}_loss`}
                         type="monotone"
-                        dataKey="rnn_loss"
-                        stroke="#A78BFA"
-                        fill="#A78BFA"
+                        dataKey={`${series.key}_loss`}
+                        stroke={series.color}
+                        fill={series.color}
                         fillOpacity={0.16}
                         strokeWidth={3}
-                        name="RNN Loss"
+                        connectNulls
+                        name={`${series.label} Loss`}
                       />
-                    )}
-                    {hasQrnnCurves && (
-                      <Area
-                        type="monotone"
-                        dataKey="qrnn_loss"
-                        stroke="#06B6D4"
-                        fill="#06B6D4"
-                        fillOpacity={0.16}
-                        strokeWidth={3}
-                        name="QNN Loss"
-                      />
-                    )}
+                    ))}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

@@ -71,15 +71,28 @@ export interface TrainingMetricBlock {
   training_time_formatted?: string;
   confusion_matrix?: number[][];
   classification_report?: Record<string, unknown>;
-  history?: {
-    train_loss?: number[];
-    val_loss?: number[];
-    train_acc?: number[];
-    val_acc?: number[];
-    loss?: number[];
-    accuracy?: number[];
-  };
+  train_accuracy?: number;
+  val_accuracy?: number;
+  history?: LearningCurveHistory;
   [key: string]: unknown;
+}
+
+export interface LearningCurveHistory {
+  train_loss?: number[];
+  val_loss?: number[];
+  train_acc?: number[];
+  val_acc?: number[];
+  train_accuracy?: number[];
+  val_accuracy?: number[];
+  loss?: number[];
+  accuracy?: number[];
+}
+
+export interface QrnnVariantResults {
+  clean?: TrainingMetricBlock;
+  noisy?: TrainingMetricBlock;
+  mitigated?: TrainingMetricBlock;
+  history?: LearningCurveHistory;
 }
 
 export interface TrainingResults {
@@ -88,14 +101,7 @@ export interface TrainingResults {
   status?: string;
   timestamp?: string;
   rnn?: TrainingMetricBlock;
-  qrnn?:
-    | TrainingMetricBlock
-    | {
-        clean?: TrainingMetricBlock;
-        noisy?: TrainingMetricBlock;
-        mitigated?: TrainingMetricBlock;
-        history?: TrainingMetricBlock['history'];
-      };
+  qrnn?: TrainingMetricBlock | QrnnVariantResults;
   comparison?: {
     better_model?: 'rnn' | 'qrnn' | string;
     rnn_accuracy?: number;
