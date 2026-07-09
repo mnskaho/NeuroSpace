@@ -3,6 +3,8 @@ export interface ValidationResult {
   error?: string
 }
 
+const MAX_CSV_ROWS = 20000
+
 // Check if file is CSV format
 function validateCsvFormat(file: File): ValidationResult {
   const fileName = file.name.toLowerCase()
@@ -33,6 +35,13 @@ async function validateCsvContent(file: File): Promise<ValidationResult> {
 
     const headers = lines[0].split(",").map((h) => h.trim())
     const dataRows = lines.slice(1)
+
+    if (dataRows.length > MAX_CSV_ROWS) {
+      return {
+        isValid: false,
+        error: "The dataset must contain no more than 20,000 rows.",
+      }
+    }
 
     // Collect all numeric values for outlier detection
     const allValues: number[] = []
