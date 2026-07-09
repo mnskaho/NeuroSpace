@@ -43,9 +43,9 @@ async function validateCsvContent(file: File): Promise<ValidationResult> {
       }
     }
 
-    // Collect all numeric values for outlier detection
-    const allValues: number[] = []
-    const columnValues: number[][] = Array(headers.length).fill(null).map(() => [])
+    let min = Infinity
+    let max = -Infinity
+    let numericCount = 0
 
     // Check for non-numeric values and missing values
     for (let rowIndex = 0; rowIndex < dataRows.length; rowIndex++) {
@@ -81,8 +81,9 @@ async function validateCsvContent(file: File): Promise<ValidationResult> {
           }
         }
 
-        allValues.push(numValue)
-        columnValues[colIndex].push(numValue)
+        if (numValue < min) min = numValue
+        if (numValue > max) max = numValue
+        numericCount++
       }
     }
 
@@ -90,9 +91,7 @@ async function validateCsvContent(file: File): Promise<ValidationResult> {
     // This was causing issues with legitimate preprocessed data
 
     // Check if data appears reasonable (basic heuristic)
-    if (allValues.length > 0) {
-      const min = Math.min(...allValues)
-      const max = Math.max(...allValues)
+    if (numericCount > 0) {
       const range = max - min
 
       // Be more lenient with value ranges for preprocessed datasets
